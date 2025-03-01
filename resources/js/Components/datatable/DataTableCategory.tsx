@@ -322,7 +322,7 @@ export function DataTableCategory({
             rowSelection,
         },
         initialState: {
-            pagination: { pageSize: 20 },
+            pagination: { pageSize: 10 },
         },
         filterFns: {
             customTags: customTagsFilter,
@@ -487,7 +487,7 @@ export function DataTableCategory({
             <div className="flex items-center justify-between space-x-2 py-4">
                 <div className="flex flex-col">
                     <div className="flex-1 text-sm text-muted-foreground">
-                        {table.getFilteredRowModel().rows.length} Total data
+                        {table.getFilteredRowModel().rows.length} total data
                         kategori.
                     </div>
                 </div>

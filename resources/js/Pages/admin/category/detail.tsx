@@ -125,6 +125,10 @@ export default function CategoryDetailDashboard({
                                 setData("category_name", e.target.value)
                             }
                         />
+                        <InputError
+                            message={errors.category_name}
+                            className="mt-2"
+                        />
                     </div>
 
                     <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
@@ -137,10 +141,14 @@ export default function CategoryDetailDashboard({
                             className="bg-gray-200 text-black font-semibold capitalize"
                             disabled
                         />
+                        <InputError
+                            message={errors.category_type}
+                            className="mt-2"
+                        />
                     </div>
 
                     <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
-                        <Label htmlFor="tags">List Tag Kategori Saat Ini</Label>
+                        <Label htmlFor="tags">Tags</Label>
                         <p className="text-xs text-red-600">
                             * Hilangkan ceklis pada tag yang ingin dihapus.
                         </p>
@@ -175,7 +183,7 @@ export default function CategoryDetailDashboard({
                                                     ? "bg-red-300 text-red-800 font-semibold"
                                                     : ""
                                             }`}
-                                            placeholder="Nama Kategori"
+                                            placeholder={tag.name}
                                             disabled={!isChecked}
                                             value={
                                                 data.tags_checked.find(
@@ -205,6 +213,10 @@ export default function CategoryDetailDashboard({
                                 </div>
                             );
                         })}
+                        <InputError
+                            message={errors.tags_checked}
+                            className="mt-2"
+                        />
                     </div>
 
                     <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">

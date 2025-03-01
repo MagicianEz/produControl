@@ -440,16 +440,16 @@ class DeliveryController extends Controller
                 $delivery = Delivery::find($productData['delivery_id']);
                 if (!$delivery) {
                     DB::rollBack();
-                    return Redirect::route('delivery.show')->with('error', 'Data delivery tidak ada.');
+                    return Redirect::route('delivery.show')->with('error', 'Data Pengiriman tidak ada.');
                 }
                 $stock = Stock::find($productData['tujuan_id']);
                 if (!$stock) {
                     DB::rollBack();
-                    return Redirect::route('delivery.show')->with('error', 'Data stock tujuan tidak ada.');
+                    return Redirect::route('delivery.show')->with('error', 'Data Stok tujuan tidak ada.');
                 }
                 if ($delivery->quantity < $productData['quantity']) {
                     DB::rollBack();
-                    return Redirect::route('delivery.show')->with('error', 'Jumlah retur melebihi quantity delivery.');
+                    return Redirect::route('delivery.show')->with('error', 'Jumlah retur melebihi quantity Pengiriman.');
                 }
                 $quantitySaatIni = $delivery->quantity;
                 $hargaSatuan = ($delivery->total_price / $delivery->quantity);
@@ -474,23 +474,23 @@ class DeliveryController extends Controller
                     'keterangan' => $productData['quantity'] . ' Produk berhasil di retur ke Stock dengan SKU: ' . $masterData->sku . ', Kategori: ' . $category->name . ', Tags: (' . implode(', ', $tags) . '), dan Harga: ' . $harga . '.'
                 ]);
                 DB::commit();
-                return Redirect::route('delivery.show')->with('success', 'Delivery berhasil diretur ke stock.');
+                return Redirect::route('stock.show')->with('success', 'Data Pengiriman berhasil diretur ke Stok.');
             }
 
             if ($tujuan == 'production') {
                 $delivery = Delivery::find($productData['delivery_id']);
                 if (!$delivery) {
                     DB::rollBack();
-                    return Redirect::route('delivery.show')->with('error', 'Data delivery tidak ada.');
+                    return Redirect::route('delivery.show')->with('error', 'Data Pengiriman tidak ada.');
                 }
                 $production = Production::find($productData['tujuan_id']);
                 if (!$production) {
                     DB::rollBack();
-                    return Redirect::route('delivery.show')->with('error', 'Data stock tujuan tidak ada.');
+                    return Redirect::route('delivery.show')->with('error', 'Data Produksi tujuan tidak ada.');
                 }
                 if ($delivery->quantity < $productData['quantity']) {
                     DB::rollBack();
-                    return Redirect::route('delivery.show')->with('error', 'Jumlah retur melebihi quantity delivery.');
+                    return Redirect::route('delivery.show')->with('error', 'Jumlah retur melebihi quantity Pengiriman.');
                 }
                 $quantitySaatIni = $delivery->quantity;
                 $hargaSatuan = ($delivery->total_price / $delivery->quantity);
@@ -515,12 +515,12 @@ class DeliveryController extends Controller
                     'keterangan' => $productData['quantity'] . ' Produk berhasil di retur ke Production dengan SKU: ' . $masterData->sku . ', Kategori: ' . $category->name . ', Tags: (' . implode(', ', $tags) . '), dan Harga: ' . $harga . '.'
                 ]);
                 DB::commit();
-                return Redirect::route('delivery.show')->with('success', 'Delivery berhasil diretur ke production.');
+                return Redirect::route('production.show')->with('success', 'Data Pengiriman berhasil diretur ke Produksi.');
             }
             return Redirect::route('delivery.show')->with('error', 'Tujuan retur tidak ada.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return Redirect::route('delivery.show')->with('error', 'Terjadi kesalahan saat mengubah data delivery.');
+            return Redirect::route('delivery.show')->with('error', 'Terjadi kesalahan saat mengubah data Pengiriman.');
         }
     }
 
@@ -532,7 +532,7 @@ class DeliveryController extends Controller
             $delivery = Delivery::find($productData['id']);
             if (!$delivery) {
                 DB::rollBack();
-                return Redirect::route('delivery.show')->with('error', 'Data delivery tidak ada.');
+                return Redirect::route('delivery.show')->with('error', 'Data Pengiriman tidak ada.');
             }
             $dataSaatIniInvoice = $delivery->invoice;
             $dataSaatIniStatus = $delivery->status_pengiriman;
@@ -551,10 +551,10 @@ class DeliveryController extends Controller
                 'keterangan' => 'Produk dengan SKU ' . $masterData->sku . ', Nomor  Invoice: ' . $dataSaatIniInvoice . ', Status Pengiriman: ' . $dataSaatIniStatus . ', dan Jumlah: ' . $dataSaatIniJumlah . '. Berhasil diubah menjadi Nomor  Invoice: ' . $productData['invoice'] . ', Status Pengiriman: ' . ucwords($productData['status_pengiriman']) . ', dan Jumlah: ' . $productData['quantity'] . '.'
             ]);
             DB::commit();
-            return Redirect::route('delivery.show')->with('success', 'Delivery berhasil diubah.');
+            return Redirect::route('delivery.show')->with('success', 'Data Pengiriman berhasil diubah.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return Redirect::route('delivery.show')->with('error', 'Terjadi kesalahan saat mengubah data delivery.');
+            return Redirect::route('delivery.show')->with('error', 'Terjadi kesalahan saat mengubah data Pengiriman.');
         }
     }
 
@@ -570,7 +570,7 @@ class DeliveryController extends Controller
             $delivery = Delivery::find($productData['id']);
             if (!$delivery) {
                 DB::rollBack();
-                return Redirect::route('delivery.show')->with('error', 'Data delivery tidak ada.');
+                return Redirect::route('delivery.show')->with('error', 'Data Pengiriman tidak ada.');
             }
             $masterData = DB::table('master_data')
                 ->join('delivery', 'delivery.master_id', '=', 'master_data.id')
@@ -585,10 +585,10 @@ class DeliveryController extends Controller
             ]);
             $delivery->delete();
             DB::commit();
-            return Redirect::route('delivery.show')->with('success', 'Delivery berhasil dihapus.');
+            return Redirect::route('delivery.show')->with('success', 'Data Pengiriman berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return Redirect::route('delivery.show')->with('error', 'Terjadi kesalahan saat menghapus data delivery.');
+            return Redirect::route('delivery.show')->with('error', 'Terjadi kesalahan saat menghapus data Pengiriman.');
         }
     }
 }

@@ -142,7 +142,7 @@ export default function DetailDeliveryDashboard({
                     </div>
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="name">Harga Satuan</Label>
+                        <Label htmlFor="name">Harga Satuan Produk</Label>
                         <Input
                             type="text"
                             id="name"
@@ -154,7 +154,7 @@ export default function DetailDeliveryDashboard({
                     </div>
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="quantity">Jumlah</Label>
+                        <Label htmlFor="quantity">Jumlah Produk</Label>
                         <Input
                             type="text"
                             id="quantity"
@@ -166,7 +166,7 @@ export default function DetailDeliveryDashboard({
                     </div>
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="price">Total Harga</Label>
+                        <Label htmlFor="price">Total Harga Produk</Label>
                         <Input
                             type="text"
                             id="price"

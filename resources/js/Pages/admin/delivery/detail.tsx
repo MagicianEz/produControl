@@ -120,6 +120,10 @@ export default function DeliveryDetailDashboard({
                                 setData("invoice", event.target.value);
                             }}
                         />
+                        <InputError
+                            message={errors.invoice}
+                            className="mt-2"
+                        />
                     </div>
 
                     <div className="grid w-full max-w-sm items-center gap-2">
@@ -165,7 +169,7 @@ export default function DeliveryDetailDashboard({
                     </div>
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="name">Harga Satuan</Label>
+                        <Label htmlFor="name">Harga Satuan Produk</Label>
                         <Input
                             type="text"
                             id="name"
@@ -178,7 +182,7 @@ export default function DeliveryDetailDashboard({
 
                     <div className="grid w-full max-w-sm items-center gap-2">
                         <Label htmlFor="statusPengiriman">
-                            Status Pengimiman
+                            Status Pengiriman
                         </Label>
                         <Select
                             name="statusPengiriman"
@@ -218,14 +222,10 @@ export default function DeliveryDetailDashboard({
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
-                        <InputError
-                            message={errors.status_pengiriman}
-                            className="mt-2"
-                        />
                     </div>
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="quantity">Jumlah</Label>
+                        <Label htmlFor="quantity">Jumlah Produk</Label>
                         <Input
                             type="text"
                             id="quantity"
@@ -248,7 +248,7 @@ export default function DeliveryDetailDashboard({
                     </div>
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="price">Total Harga</Label>
+                        <Label htmlFor="price">Total Harga Produk</Label>
                         <Input
                             type="text"
                             id="price"
@@ -261,19 +261,12 @@ export default function DeliveryDetailDashboard({
 
                     <Button
                         type="submit"
-                        disabled={
-                            processing ||
-                            !data.id ||
-                            !data.invoice ||
-                            !data.total_price ||
-                            !data.quantity ||
-                            !data.status_pengiriman
-                        }
+                        disabled={processing}
                         className={`inline-flex items-center rounded-md border border-transparent bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gray-700 focus:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-gray-900 ${
                             processing && "opacity-25"
                         } `}
                     >
-                        PERBARUI
+                        UBAH
                     </Button>
                 </form>
             </div>

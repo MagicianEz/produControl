@@ -197,7 +197,7 @@ export default function DeliveryReturDashboard({
                     </div>
 
                     <div className="grid w-full lg:max-w-lg items-center gap-2">
-                        <Label htmlFor="tujuan">Tujuan Retur</Label>
+                        <Label htmlFor="tujuan">Pilih Tujuan Retur</Label>
                         <Select
                             onValueChange={(value: "production" | "stock") =>
                                 setData("tujuan", value)
@@ -297,7 +297,7 @@ export default function DeliveryReturDashboard({
                     )}
 
                     <div className="grid w-full lg:max-w-lg items-center gap-2">
-                        <Label htmlFor="total_harga">Total Harga</Label>
+                        <Label htmlFor="total_harga">Total Harga Produk</Label>
                         <Input
                             type="text"
                             id="total_harga"
@@ -309,7 +309,7 @@ export default function DeliveryReturDashboard({
                     </div>
 
                     <div className="grid w-full lg:max-w-lg items-center gap-2">
-                        <Label htmlFor="harga_satuan">Harga Satuan</Label>
+                        <Label htmlFor="harga_satuan">Harga Satuan Produk</Label>
                         <Input
                             type="text"
                             id="harga_satuan"
@@ -324,7 +324,7 @@ export default function DeliveryReturDashboard({
                     </div>
 
                     <div className="grid w-full lg:max-w-lg items-center gap-2">
-                        <Label htmlFor="jumlah_delivery">Jumlah Produk yang Dikirim</Label>
+                        <Label htmlFor="jumlah_delivery">Jumlah Produk Pada Pengiriman Ini</Label>
                         <Input
                             type="text"
                             id="jumlah_delivery"
@@ -375,14 +375,13 @@ export default function DeliveryReturDashboard({
                         disabled={
                             processing ||
                             !data.category_id ||
-                            !data.tujuan_id ||
-                            data.quantity === 0
+                            !data.tujuan_id
                         }
                         className={`inline-flex items-center rounded-md border border-transparent bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gray-700 focus:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-gray-900 ${
                             processing && "opacity-25"
                         } `}
                     >
-                        SIMPAN
+                        RETUR
                     </Button>
                 </form>
             </div>

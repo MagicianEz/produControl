@@ -132,7 +132,7 @@ export default function DeleteUserDashboard({
                             processing && "opacity-25"
                         } `}
                     >
-                        SIMPAN
+                        HAPUS
                     </Button>
                 </form>
             </div>

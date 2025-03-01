@@ -98,7 +98,7 @@ export default function CreateUserDashboard({
                             onChange={(e) => setData("name", e.target.value)}
                         />
                         <InputError
-                            message={errors.password}
+                            message={errors.name}
                             className="mt-2"
                         />
                     </div>

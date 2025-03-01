@@ -184,7 +184,7 @@ export default function DetailUserDashboard({
                             processing && "opacity-25"
                         } `}
                     >
-                        SIMPAN
+                        UBAH
                     </Button>
                 </form>
             </div>

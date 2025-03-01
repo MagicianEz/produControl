@@ -132,6 +132,10 @@ export default function AddProductDashboard({
                                 setData("product_name", e.target.value);
                             }}
                         />
+                        <InputError
+                            message={errors.product_name}
+                            className="mt-2"
+                        />
                         <p className="text-xs mt-2 text-red-600">
                             <span className="font-semibold">Catatan:</span>{" "}
                             Hati-hati saat mengubah nama product, karena semua
@@ -201,7 +205,7 @@ export default function AddProductDashboard({
                         production.id !== productionExist && (
                             <div className="grid w-full max-w-sm items-center gap-2">
                                 <Label htmlFor="quantityTarget">
-                                    Jumlah Product Tujuan
+                                    Jumlah Produk Tujuan
                                 </Label>
                                 <Input
                                     type="text"
@@ -215,7 +219,7 @@ export default function AddProductDashboard({
                         )}
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="quantity">Jumlah</Label>
+                        <Label htmlFor="quantity">Jumlah Produk</Label>
                         {dataExist &&
                         productionExist &&
                         production.id !== productionExist ? (
@@ -285,7 +289,7 @@ export default function AddProductDashboard({
                             processing && "opacity-25"
                         } `}
                     >
-                        PERBARUI
+                        UBAH
                     </Button>
                 </form>
             </div>

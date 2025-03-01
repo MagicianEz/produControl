@@ -1,83 +1,62 @@
-const filesToCache = ["/", "/offline.html", "/assets/images/icon.jpg"];
+self.addEventListener("install", (event) => {
+    event.waitUntil(
+        fetch("/asset-manifest.json")
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Gagal mengambil daftar assets: " + response.statusText);
+                }
+                return response.json();
+            })
+            .then((manifest) => {
+                return caches.open("offline-cache").then((cache) => {
+                    let filesToCache = [
+                        "/offline.html",
+                        "/manifest.json",
+                        "/assets/images/icon.jpg",
+                        "/assets/images/web.png",
+                        "/",
+                        "/dashboard",
+                        "/dashboard/category",
+                        "/dashboard/stock",
+                        "/dashboard/production",
+                        "/dashboard/delivery",
+                        "/dashboard/user"
+                    ];
 
-// Preload files into the cache during the service worker installation
-const preLoad = function () {
-    return caches.open("offline").then(function (cache) {
-        return Promise.all(
-            filesToCache.map(function (url) {
-                return fetch(url).then(function (response) {
-                    if (response.ok) {
-                        return cache.put(url, response.clone());
-                    }
-                    return Promise.reject(new Error(`Failed to fetch ${url}`));
+                    Object.values(manifest.files).forEach((file) => {
+                        filesToCache.push(file);
+                    });
+
+                    return cache.addAll(filesToCache);
                 });
             })
-        )
-            .then(function () {
-                console.log("All files cached successfully");
+            .catch((error) => {
+                console.error("[Service Worker] Gagal mengambil daftar assets:", error);
             })
-            .catch(function (error) {
-                console.error("Failed to cache files:", error);
-            });
-    });
-};
-
-// Install event to cache files
-self.addEventListener("install", function (event) {
-    event.waitUntil(preLoad());
+    );
 });
 
-// Check if the response is valid
-const checkResponse = function (request) {
-    return new Promise(function (fulfill, reject) {
-        fetch(request)
-            .then(function (response) {
-                if (response.ok) {
-                    fulfill(response);
-                } else {
-                    reject();
-                }
-            })
-            .catch(reject); // Catch network errors
-    });
-};
-
-// Add the request to the cache
-const addToCache = function (request) {
-    return caches.open("offline").then(function (cache) {
-        return fetch(request).then(function (response) {
-            if (response.ok) {
-                return cache.put(request, response.clone());
+self.addEventListener("fetch", (event) => {
+    event.respondWith(
+        caches.match(event.request).then((cachedResponse) => {
+            // Jika ditemukan di cache, gunakan cache
+            if (cachedResponse) {
+                return cachedResponse;
             }
-            return response; // Return the response if not ok
-        });
-    });
-};
 
-// Return the cached response or the offline page
-const returnFromCache = function (request) {
-    return caches.open("offline").then(function (cache) {
-        return cache.match(request).then(function (matching) {
-            if (!matching || matching.status === 404) {
-                return cache.match("offline.html"); // Return offline page if not found
-            } else {
-                return matching; // Return the cached response
-            }
-        });
-    });
-};
-
-// Fetch event to handle requests
-self.addEventListener("fetch", function (event) {
-    if (event.request.url.startsWith(self.location.origin)) {
-        // Check if the request is for the same origin
-        event.respondWith(
-            checkResponse(event.request).catch(function () {
-                return returnFromCache(event.request);
-            })
-        );
-        if (event.request.method === "GET") {
-            event.waitUntil(addToCache(event.request));
-        }
-    }
+            // Jika tidak ada di cache, coba ambil dari jaringan
+            return fetch(event.request)
+                .then((networkResponse) => {
+                    return caches.open("offline-cache").then((cache) => {
+                        // Simpan file yang berhasil di-fetch ke dalam cache
+                        cache.put(event.request, networkResponse.clone());
+                        return networkResponse;
+                    });
+                })
+                .catch(() => {
+                    console.warn("[Service Worker] Tidak ada di cache & jaringan gagal:", event.request.url);
+                    return caches.match("/offline.html");
+                });
+        })
+    );
 });

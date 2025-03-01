@@ -548,7 +548,7 @@ export function DataTableStock({
             rowSelection,
         },
         initialState: {
-            pagination: { pageSize: 20 },
+            pagination: { pageSize: 10 },
         },
         filterFns: {
             customFilter,
@@ -867,8 +867,8 @@ export function DataTableStock({
             <div className="flex items-center justify-between space-x-2 py-4">
                 <div className="flex flex-col">
                     <div className="flex-1 text-sm text-muted-foreground">
-                        {table.getFilteredRowModel().rows.length} Total data
-                        stock dengan jumlah {QUANTITY_PRODUCT} product.
+                        {table.getFilteredRowModel().rows.length} total data
+                        Stok dengan jumlah {QUANTITY_PRODUCT} produk.
                     </div>
                 </div>
                 <div className="flex flex-col gap-2">

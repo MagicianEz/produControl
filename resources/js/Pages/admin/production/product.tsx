@@ -15,7 +15,7 @@ import {
     SelectValue,
 } from "@/Components/ui/Select";
 import { Checkbox } from "@/Components/ui/Checkbox";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 
 export default function AddProductDashboard({
@@ -70,68 +70,102 @@ export default function AddProductDashboard({
         });
     };
 
-    const debouncedSku = useMemo(() => {
-        let handler: NodeJS.Timeout;
-        if (data.sku) {
-            handler = setTimeout(() => {
-                setIsFetching(true);
-                axios
-                    .get(route("api.category"), {
-                        params: { sku: data.sku },
-                    })
-                    .then((response: any) => {
-                        setSkuCategory((prev) => ({
-                            ...prev,
-                            id: response.data.data.category.id,
-                            name: response.data.data.category.name,
-                        }));
-                        setSkuTags(response.data.data.category.tags);
-                        setData((prev) => ({
-                            ...prev,
-                            category_id: response.data.data.category.id,
-                        }));
-                    })
-                    .catch(() => {
-                        setSkuCategory((prev) => ({
-                            ...prev,
-                            id: undefined,
-                            name: undefined,
-                        }));
-                        setSkuTags([]);
-                        setData((prev) => ({
-                            ...prev,
-                            category_id: null,
-                        }));
-                    })
-                    .finally(() => {
-                        setIsFetching(false);
-                    });
-                axios
-                    .get(route("api.product.name"), {
-                        params: { sku: data.sku },
-                    })
-                    .then((response: any) => {
-                        setData((prev) => ({
-                            ...prev,
-                            name: response.data.data.name,
-                        }));
-                    })
-                    .catch(() => {
-                        setData("name", "");
-                    })
-                    .finally(() => {
-                        setIsFetching(false);
-                    });
-            }, 1000);
+    useEffect(() => {
+        if (!data.sku) {
+            setData((prev) => ({
+                ...prev,
+                name: "",
+                category_id: null,
+                tags: [],
+            }));
+            setSkuCategory({ id: undefined, name: undefined });
+            setSkuTags([]);
+            setTags([]);
+            setDataExist(false);
+            return;
         }
-        return () => clearTimeout(handler);
+    
+        setSkuTags([]);
+        setTags([]);
+        setData((prev) => ({
+            ...prev,
+            tags: [],
+        }));
+    
+        const timeoutId = setTimeout(() => {
+            setIsFetching(true);
+    
+            Promise.all([
+                axios.get(route("api.product.name"), { params: { sku: data.sku } }),
+                axios.get(route("api.category"), { params: { sku: data.sku } }),
+            ])
+            .then(([productRes, categoryRes]) => {
+                const productName = productRes.data.data?.name || "";
+                const categoryData = categoryRes.data.data?.category || null;
+                
+                if (productName) {
+                    setData((prev) => ({
+                        ...prev,
+                        name: productName,
+                    }));
+                    // setDataExistName(true);
+                }
+
+                if (categoryData) {
+                    setSkuCategory({
+                        id: categoryData.id,
+                        name: categoryData.name,
+                    });
+                    setSkuTags(categoryData.tags);
+                    setData((prev) => ({
+                        ...prev,
+                        category_id: categoryData.id,
+                    }));
+                } else {
+                    setSkuCategory({ id: undefined, name: undefined });
+                    setSkuTags([]);
+                    setData((prev) => ({
+                        ...prev,
+                        category_id: null,
+                    }));
+                }
+            })
+            .catch(() => {
+                setSkuCategory({ id: undefined, name: undefined });
+                setSkuTags([]);
+                setData((prev) => ({
+                    ...prev,
+                    name: "",
+                    category_id: null,
+                }));
+            })
+            .finally(() => {
+                setIsFetching(false);
+            });
+    
+        }, 500);
+
+        return () => {
+            clearTimeout(timeoutId);
+        };
     }, [data.sku]);
-
+    
     useEffect(() => {
-        return debouncedSku;
-    }, [debouncedSku]);
-
-    useEffect(() => {
+        if (!data.sku || !data.category_id) {
+            setDataExist(false);
+            return;
+        }
+    
+        if (!skuCategory.id) {
+            return;
+        }
+    
+        if (data.tags.length === 0) {
+            return;
+        }
+    
+        setIsFetching(true);
+    
         axios
             .get(route("api.production.check.product.exist"), {
                 params: {
@@ -141,12 +175,21 @@ export default function AddProductDashboard({
                 },
             })
             .then((response: any) => {
-                setDataExist(response.status === 200);
+                if (response.status === 200) {
+                    setDataExist(true);
+                } else {
+                    setDataExist(false);
+                }
             })
             .catch(() => {
                 setDataExist(false);
+            })
+            .finally(() => {
+                setIsFetching(false);
             });
-    }, [data.tags]);
+    
+    }, [JSON.stringify(data.tags)]);
+    
 
     const changeCategoryId = (value: any) => {
         const filteredTags = categoriesWithTags
@@ -336,7 +379,7 @@ export default function AddProductDashboard({
                     )}
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="quantity">Jumlah</Label>
+                        <Label htmlFor="quantity">Jumlah Produk</Label>
                         <Input
                             type="text"
                             id="quantity"
@@ -360,9 +403,9 @@ export default function AddProductDashboard({
                                 <span className="font-semibold">
                                     {data.sku}
                                 </span>{" "}
-                                dan tag yang dipilih ditemukan. Jika Anda
-                                melakukan pembaruan, data ini akan dimasukkan ke
-                                data tujuan yang memiliki sku dan tag yang sama!
+                                dan Tags yang dipilih ditemukan pada Produksi. Jika Anda
+                                melakukan aksi tambah, data ini akan dimasukkan ke
+                                data tujuan yang memiliki SKU dan Tags yang sama!
                             </p>
                         </div>
                     )}

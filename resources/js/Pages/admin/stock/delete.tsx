@@ -156,7 +156,7 @@ export default function AddProductDashboard({
                     )}
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="quantity">Jumlah</Label>
+                        <Label htmlFor="quantity">Jumlah Produk</Label>
                         <Input
                             type="text"
                             id="quantity"
@@ -204,7 +204,7 @@ export default function AddProductDashboard({
                             processing && "opacity-25"
                         } `}
                     >
-                        DELETE
+                        HAPUS
                     </Button>
                 </form>
             </div>

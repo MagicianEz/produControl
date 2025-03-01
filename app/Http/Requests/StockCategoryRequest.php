@@ -26,4 +26,19 @@ class StockCategoryRequest extends FormRequest
             'tags' => ['required', 'string', 'min:1', 'max:255'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Nama Kategori wajib diisi',
+            'name.string' => 'Nama Kategori harus berupa teks',
+            'name.min' => 'Nama Kategori harus memiliki minimal 1 karakter',
+            'name.max' => 'Nama Kategori tidak boleh lebih dari 20 karakter',
+
+            'tags.required' => 'Harap isi minimal 1 Tag',
+            'tags.array' => 'Format Tags tidak valid',
+            'tags.min' => 'Tags harus memiliki minimal 1 karakter',
+            'tags.max' => 'Tags terlalu banyak',
+        ];
+    }
 }

@@ -101,6 +101,62 @@ class ProductionController extends Controller
         }
     }
 
+    public function api_get_stock_category(GetCategoryProduction $request)
+    {
+        $productData = $request->validated();
+
+        // 🔍 Cari kategori production yang terkait dengan SKU yang diinputkan
+        $categoryProduction = DB::table('selected_production_category')
+            ->join('production', 'selected_production_category.production_id', '=', 'production.id')
+            ->join('master_data', 'production.master_id', '=', 'master_data.id')
+            ->join('category', 'selected_production_category.category_id', '=', 'category.id')
+            ->select('category.id as category_id', 'category.name as category_name')
+            ->where('master_data.sku', '=', $productData['sku'])
+            ->where('category.type', '=', 'production') // Pastikan mengambil kategori bertipe production
+            ->first();
+
+        // Jika kategori production tidak ditemukan, kembalikan error
+        if (!$categoryProduction) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Category production not found for the given SKU',
+            ], 404);
+        }
+
+        // 🔍 Cari kategori stok yang memiliki nama yang sama dengan kategori production yang ditemukan
+        $categoryStock = DB::table('category')
+            ->where('name', $categoryProduction->category_name)
+            ->where('type', 'stock') // Cari kategori dengan type stock
+            ->first();
+
+        // Jika kategori stok tidak ditemukan, kembalikan error
+        if (!$categoryStock) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'No stock category found matching the production category name',
+            ], 404);
+        }
+
+        // 🔍 Ambil daftar tag yang terkait dengan kategori stok
+        $tags = DB::table('tag')
+            ->where('category_id', $categoryStock->id)
+            ->select('id as tag_id', 'name as tag_name')
+            ->get();
+
+        // 🔄 Format data kategori stok dengan tags
+        return response()->json([
+            'code' => 200,
+            'data' => [
+                "category" => [
+                    'id' => $categoryStock->id,
+                    'name' => $categoryStock->name,
+                    'tags' => $tags,
+                ]
+            ],
+        ], 200);
+    }
+
+
     public function api_check_production_exist(CheckProductionExistRequest $request)
     {
         try {
@@ -586,7 +642,7 @@ class ProductionController extends Controller
                         'action' => 'tambah',
                         'category' => 'production',
                         'sku' => $product->sku,
-                        'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] . ', Kategori: ' . $category->name . ', Tags: (' . $tagNamesString . '). Berhasil ditambahkan ke Production dengan jumlah: ' . $productData['quantity'] . '.'
+                        'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] . ', Kategori: ' . $category->name . ', Tags: (' . $tagNamesString . '). Berhasil ditambahkan ke Produksi dengan jumlah: ' . $productData['quantity'] . '.'
                     ]);
                 }
             } else {
@@ -606,7 +662,7 @@ class ProductionController extends Controller
                         'action' => 'tambah',
                         'category' => 'production',
                         'sku' => $product->sku,
-                        'keterangan' => 'Produk dengan Kategori: ' . $categoryName->name . ', Tags: (' . $tagNamesString . '), dan Jumlah: ' . $productData['quantity'] . ' telah ditambahkan di Production.'
+                        'keterangan' => 'Produk dengan Kategori: ' . $categoryName->name . ', Tags: (' . $tagNamesString . '), dan Jumlah: ' . $productData['quantity'] . ' telah ditambahkan di Produksi.'
                     ]);
                 } else {
                     $production = Production::create([
@@ -629,13 +685,13 @@ class ProductionController extends Controller
                             'action' => 'tambah',
                             'category' => 'production',
                             'sku' => $product->sku,
-                            'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] . ', Kategori: ' . $category->name . ', Tags: (' . $tagNamesString . '). Berhasil ditambahkan ke Production dengan jumlah: ' . $productData['quantity'] . ').'
+                            'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] . ', Kategori: ' . $category->name . ', Tags: (' . $tagNamesString . '). Berhasil ditambahkan ke Produksi dengan jumlah: ' . $productData['quantity'] . ').'
                         ]);
                     }
                 }
             }
             DB::commit();
-            return Redirect::route('production.show')->with('success', 'Product berhasil dibuat.');
+            return Redirect::route('production.show')->with('success', 'Produk berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollBack();
             return Redirect::route('production.show')->with('error', 'Terjadi kesalahan saat membuat produk.');
@@ -659,10 +715,10 @@ class ProductionController extends Controller
                 ]);
             }
             DB::commit();
-            return Redirect::route('production.show')->with('success', 'Production category berhasil dibuat.');
+            return Redirect::route('category.show')->with('success', 'Kategori Produksi berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return Redirect::route('production.show')->with('error', 'Terjadi kesalahan saat membuat kategori produksi.');
+            return Redirect::route('category.show')->with('error', 'Terjadi kesalahan saat membuat kategori Produksi.');
         }
     }
 
@@ -740,7 +796,7 @@ class ProductionController extends Controller
                     'category' => 'production',
                     'sku' => $productData['sku'],
                     'keterangan' => 'Produk dengan Kategori: ' . $categoryProd->category_name .
-                        ', dan Tags: (' . implode(', ', $PRODUCTION[0]->tags) . '). Berhasil dipindahkan ke Stock dengan Tags baru: (' . implode(', ', $tagNamesProd) . '), Harga: ' . $harga . ', dan Jumlah: ' . $productData['quantity'] . '.',
+                        ', dan Tags: (' . implode(', ', $PRODUCTION[0]->tags) . '). Berhasil dipindahkan ke Stok dengan Tags baru: (' . implode(', ', $tagNamesProd) . '), Harga: ' . $harga . ', dan Jumlah: ' . $productData['quantity'] . '.',
                 ]);
             } else {
                 $product = Production::where('id', $productData['production_id'])
@@ -748,7 +804,7 @@ class ProductionController extends Controller
                     ->first();
                 if (!$product) {
                     DB::rollBack();
-                    return Redirect::route('stock.show')->with('error', 'Product tidak tersedia.');
+                    return Redirect::route('stock.show')->with('error', 'Produk tidak tersedia.');
                 }
                 $product->quantity -= $productData['quantity'];
                 $product->save();
@@ -773,12 +829,12 @@ class ProductionController extends Controller
                     'category' => 'production',
                     'sku' => $productData['sku'],
                     'keterangan' => 'Produk dengan Kategori: ' .  $category->name .
-                        ', dan Tags: (' . implode(', ', $PRODUCTION[0]->tags) . '). Berhasil dipindahkan ke Stock dengan Tags baru: (' . implode(', ', $tagNames) . '), harga ' . $harga . ', dan Jumlah: ' .
+                        ', dan Tags: (' . implode(', ', $PRODUCTION[0]->tags) . '). Berhasil dipindahkan ke Stok dengan Tags baru: (' . implode(', ', $tagNames) . '), harga ' . $harga . ', dan Jumlah: ' .
                         $productData['quantity'] . '.'
                 ]);
             }
             DB::commit();
-            return Redirect::route('stock.show')->with('success', 'Product berhasil dipindahkan ke stock.');
+            return Redirect::route('stock.show')->with('success', 'Produk berhasil dipindahkan ke Stok.');
         } catch (\Exception $e) {
             DB::rollBack();
             return Redirect::route('stock.show')->with('error', 'Terjadi kesalahan saat memindahkan produk: ' . $e->getMessage());
@@ -867,11 +923,11 @@ class ProductionController extends Controller
                 $production = Production::where('id', '=', $list)->first();
                 if (!$production) {
                     DB::rollBack();
-                    return Redirect::route('production.show')->with('error', 'Product yang ingin digabung tidak ada.');
+                    return Redirect::route('production.show')->with('error', 'Produk yang ingin digabung tidak ada.');
                 }
                 if ($production->quantity < $productData['quantity']) {
                     DB::rollBack();
-                    return Redirect::route('production.show')->with('error', 'Jumlah product yang ingin digabung terlalu banyak.');
+                    return Redirect::route('production.show')->with('error', 'Jumlah Produk yang ingin digabung terlalu banyak.');
                 }
                 $production->quantity -= $productData['quantity'];
                 $production->save();
@@ -899,7 +955,7 @@ class ProductionController extends Controller
                     'action' => 'merge',
                     'category' => 'production',
                     'sku' => $productData['sku'],
-                    'keterangan' => $MERGELENGTH . ' Produk pada Production telah di Merge ke Stock tujuan SKU: ' . $productData['sku'] . ', Kategori: ' . $categoryProd->category_name . ', Tags: (' . implode(', ', $tagNamesProd) . '), Harga: ' . $harga . ', dan Jumlah: ' . $productData['quantity'] . '. List produk yang di Merge:\n' . $formattedItems
+                    'keterangan' => $MERGELENGTH . ' Produk pada Produksi telah di Merge ke Stok dengan tujuan SKU: ' . $productData['sku'] . ', Kategori: ' . $categoryProd->category_name . ', Tags: (' . implode(', ', $tagNamesProd) . '), Harga: ' . $harga . ', dan Jumlah: ' . $productData['quantity'] . '. List produk yang di Merge:\n' . $formattedItems
                 ]);
             } else {
                 $newStock = Stock::create([
@@ -926,12 +982,12 @@ class ProductionController extends Controller
                         'action' => 'merge',
                         'category' => 'production',
                         'sku' => $productData['sku'],
-                        'keterangan' => $MERGELENGTH . ' Produk pada Production telah di Merge ke Stock tujuan SKU: ' . $productData['sku'] . ', Kategori: ' . $category->name . ', Tags: (' . implode(', ', $listTag) . '), Harga: ' . $harga . ', dan Jumlah: ' . $productData['quantity'] . '. List produk yang di Merge:\n' . $formattedItems
+                        'keterangan' => $MERGELENGTH . ' Produk pada Produksi telah di Merge ke Stok dengan tujuan SKU: ' . $productData['sku'] . ', Kategori: ' . $category->name . ', Tags: (' . implode(', ', $listTag) . '), Harga: ' . $harga . ', dan Jumlah: ' . $productData['quantity'] . '. List produk yang di Merge:\n' . $formattedItems
                     ]);
                 }
             }
             DB::commit();
-            return Redirect::route('stock.show')->with('success', 'Product berhasil dimerge ke stock.');
+            return Redirect::route('stock.show')->with('success', 'Produk berhasil dimerge ke Stok.');
         } catch (\Exception $e) {
             DB::rollBack();
             return Redirect::route('production.show')->with('error', 'Terjadi kesalahan saat menggabungkan produk.');
@@ -1011,7 +1067,7 @@ class ProductionController extends Controller
                             'action' => 'edit',
                             'category' => 'production',
                             'sku' => $productData['sku'],
-                            'keterangan' => '111 Produk dengan SKU: ' . $productData['sku'] .
+                            'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] .
                                 ' dan Nama Produk: ' . $MASTERDATA_DATABASE_NAMA . '. Berhasil ubah Nama Produk menjadi: ' . $MASTERDATA_BARU_NAMA . '.'
                         ]);
                         DB::commit();
@@ -1021,19 +1077,19 @@ class ProductionController extends Controller
                             'action' => 'edit',
                             'category' => 'production',
                             'sku' => $productData['sku'],
-                            'keterangan' => '222 Produk dengan SKU: ' . $productData['sku'] .
+                            'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] .
                                 ', Kategori: ' . $categorySelected . ', Tags: (' . implode(', ', $TAGLAMA) . '), dan Jumlah: ' . $MASTERDATA_DATABASE_QUANTITY . '. Berhasil diubah menjadi Tags: (' . implode(', ', $listTag->toArray()) .
                                 '), dan Jumlah: ' . $productData['quantity'] . '.'
                         ]);
                         DB::commit();
-                        return Redirect::route('production.show')->with('success', 'Product berhasil diubah');
+                        return Redirect::route('production.show')->with('success', 'Produk berhasil diubah');
                     } else {
                         Logging::create([
                             'user_id' => $request->user()->id,
                             'action' => 'edit',
                             'category' => 'production',
                             'sku' => $productData['sku'],
-                            'keterangan' => '333 Produk dengan SKU: ' . $productData['sku'] .
+                            'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] .
                                 ' Kategori: ' . $categorySelected . ' Tags: (' . implode(', ', $TAGLAMA) . '), dan Jumlah: ' . $MASTERDATA_DATABASE_QUANTITY . '. Berhasil digabungkan ke Tags: (' . implode(', ', $listTag->toArray()) .
                                 '), dan Jumlah produk tujuan menjadi: ' . $MASTERDATA_BARU_QUANTITY . '.'
                         ]);
@@ -1045,13 +1101,13 @@ class ProductionController extends Controller
                             'action' => 'edit',
                             'category' => 'production',
                             'sku' => $productData['sku'],
-                            'keterangan' => '444 Produk dengan SKU: ' . $productData['sku'] .
+                            'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] .
                                 ', Kategori: ' . $categorySelected . ', Tags: (' . implode(', ', $TAGLAMA) . '), dan Jumlah: ' . $MASTERDATA_DATABASE_QUANTITY . '. Berhasil diubah menjadi Tags: (' . implode(', ', $listTag->toArray()) .
                                 '), dan Jumlah: ' . $productData['quantity'] . '.'
                         ]);
                         DB::commit();
                     }
-                    return Redirect::route('production.show')->with('success', 'Product berhasil diubah');
+                    return Redirect::route('production.show')->with('success', 'Produk berhasil diubah');
                 } else {
                     DB::rollBack();
                     return Redirect::route('production.show')->with('error', 'Error! Data dengan sku dan Tags tersebut sudah ada.');
@@ -1097,7 +1153,7 @@ class ProductionController extends Controller
                         'action' => 'edit',
                         'category' => 'production',
                         'sku' => $productData['sku'],
-                        'keterangan' => '555 Produk dengan SKU: ' . $productData['sku'] .
+                        'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] .
                             ' dan Nama Produk: ' . $MASTERDATA_DATABASE_NAMA . '. Berhasil ubah Nama Produk menjadi: ' . $MASTERDATA_BARU_NAMA . '.'
                     ]);
                     DB::commit();
@@ -1107,16 +1163,16 @@ class ProductionController extends Controller
                     'action' => 'edit',
                     'category' => 'production',
                     'sku' => $productData['sku'],
-                    'keterangan' => '666 Produk dengan SKU: ' . $productData['sku'] .
+                    'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] .
                         ', Kategori: ' . $categorySelected . ', Tags: (' . implode(', ', $TAGLAMA) . '), dan Jumlah: ' . $MASTERDATA_DATABASE_QUANTITY . '. Berhasil diubah menjadi Tags: (' . implode(', ', $listTag) .
                         '), dan Jumlah: ' . $productData['quantity'] . '.'
                 ]);
                 DB::commit();
-                return Redirect::route('production.show')->with('success', 'Berhasil mengubah data production.');
+                return Redirect::route('production.show')->with('success', 'Berhasil mengubah data Produksi.');
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            return Redirect::route('production.show')->with('error', 'Terjadi kesalahan saat mengubah data production.');
+            return Redirect::route('production.show')->with('error', 'Terjadi kesalahan saat mengubah data Produksi.');
         }
     }
 
@@ -1172,10 +1228,10 @@ class ProductionController extends Controller
             ]);
             $production->delete();
             DB::commit();
-            return Redirect::route('production.show')->with('success', 'Berhasil menghapus data production.');
+            return Redirect::route('production.show')->with('success', 'Berhasil menghapus data Produksi.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return Redirect::route('production.show')->with('error', 'Terjadi kesalahan saat menghapus data production.');
+            return Redirect::route('production.show')->with('error', 'Terjadi kesalahan saat menghapus data Produksi.');
         }
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\File;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Dashboard\DashboardController;
@@ -32,6 +34,7 @@ Route::group(['prefix' => 'dashboard', 'middleware' => ['auth', 'verified']], fu
     Route::group(['prefix' => 'production'], function () {
         Route::get('/api/product-name', [ProductionController::class, 'api_get_product_name'])->name('api.product.name');
         Route::get('/api/category', [ProductionController::class, 'api_get_category'])->name('api.category');
+        Route::get('/api/category/stock', [ProductionController::class, 'api_get_stock_category'])->name('api.stock.category');
         Route::get('/api/check-product-exist', [ProductionController::class, 'api_check_production_exist'])->name('api.production.check.product.exist');
         Route::get('/api/production-max-quantity', [ProductionController::class, 'api_get_production_max_quantity'])->name('api.production.max.quantity');
         Route::get('/', [ProductionController::class, 'show'])->name('production.show');
@@ -50,7 +53,7 @@ Route::group(['prefix' => 'dashboard', 'middleware' => ['auth', 'verified']], fu
     });
 
     Route::group(['prefix' => 'stock'], function () {
-        Route::get('/api/product-name', [StockController::class, 'api_get_stock_product_name'])->name('api.stock.product.name.exist');
+        Route::get('/api/product-name', [StockController::class, 'api_get_product_name'])->name('api.stock.product.name.exist');
         Route::get('/api/check-product-exist', [StockController::class, 'api_check_production_exist'])->name('api.stock.check.product.exist');
         Route::get('/', [StockController::class, 'show'])->name('stock.show');
         Route::get('/detail', [StockController::class, 'detail_show'])->name('stock.detail.show');
@@ -89,6 +92,24 @@ Route::group(['prefix' => 'dashboard', 'middleware' => ['auth', 'verified']], fu
         Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
     });
+});
+
+Route::get('/asset-manifest.json', function () {
+    $buildPath = public_path('build/assets');
+
+    if (!File::exists($buildPath)) {
+        return response()->json(['error' => 'Build assets folder not found'], 404);
+    }
+
+    $files = File::files($buildPath);
+    $manifest = ['files' => []];
+
+    foreach ($files as $file) {
+        $relativePath = '/build/assets/' . $file->getFilename();
+        $manifest['files'][] = $relativePath;
+    }
+
+    return new JsonResponse($manifest);
 });
 
 require __DIR__ . '/auth.php';

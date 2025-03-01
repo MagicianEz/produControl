@@ -152,6 +152,10 @@ export default function DetailStockDashboard({
                                 setData("product_name", event.target.value);
                             }}
                         />
+                        <InputError
+                                message={errors.product_name}
+                                className="mt-2"
+                            />
                         <p className="text-xs mt-2 text-red-600">
                             <span className="font-semibold">Catatan:</span>{" "}
                             Hati-hati saat mengubah nama product, karena semua
@@ -219,7 +223,7 @@ export default function DetailStockDashboard({
                     {dataExist && stockExist && stock.id !== stockExist && (
                         <div className="grid w-full max-w-sm items-center gap-2">
                             <Label htmlFor="quantityTarget">
-                                Jumlah Product Tujuan
+                                Jumlah Produk Tujuan
                             </Label>
                             <Input
                                 type="text"
@@ -233,7 +237,7 @@ export default function DetailStockDashboard({
                     )}
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="quantity">Jumlah</Label>
+                        <Label htmlFor="quantity">Jumlah Produk</Label>
                         {dataExist && stockExist && stock.id !== stockExist ? (
                             <Input
                                 type="text"
@@ -279,7 +283,7 @@ export default function DetailStockDashboard({
                     </div>
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="price">Harga Satuan</Label>
+                        <Label htmlFor="price">Harga Satuan Produk</Label>
                         <Input
                             type="text"
                             id="price"
@@ -331,7 +335,7 @@ export default function DetailStockDashboard({
                             processing && "opacity-25"
                         } `}
                     >
-                        PERBARUI
+                        UBAH
                     </Button>
                 </form>
             </div>

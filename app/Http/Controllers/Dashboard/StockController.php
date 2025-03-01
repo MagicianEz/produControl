@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\DB;
 
 class StockController extends Controller
 {
-    public function api_get_stock_product_name(GetCategoryStock $request)
+    public function api_get_product_name(GetCategoryStock $request)
     {
         $productData = $request->validated();
         $product = DB::table('master_data')
@@ -369,10 +369,10 @@ class StockController extends Controller
                 ]);
             }
             DB::commit();
-            return Redirect::route('stock.show')->with('success', 'Stock category berhasil dibuat.');
+            return Redirect::route('category.show')->with('success', 'Kategori Stok berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return Redirect::route('stock.show')->with('error', 'Terjadi kesalahan saat membuat kategori stock.');
+            return Redirect::route('category.show')->with('error', 'Terjadi kesalahan saat membuat kategori Stok.');
         }
     }
 
@@ -421,13 +421,13 @@ class StockController extends Controller
                 'category' => 'stock',
                 'sku' => $masterData->sku,
                 // Produk dengan SKU: BOT001, Kategori: Cap, Tags: (Sortir, Assembling, Repacking), dan Harga: Rp20.000. Berhasil dipindahkan ke Delivery dengan No Invoice: TKI_10010105, dan Jumlah: 2.
-                'keterangan' => 'Produk dengan SKU: ' . $masterData->sku . ', Kategori: ' . $updateProductionCategory[0]->category_name . ', Tags: (' . implode(', ', $listTag->toArray()) . '), dan Harga: ' . $harga  . '. Berhasil dipindahkan ke Delivery dengan Nomor Invoice: ' . $productData['invoice'] . ', dan Jumlah: ' . $productData['quantity'] . '.'
+                'keterangan' => 'Produk dengan SKU: ' . $masterData->sku . ', Kategori: ' . $updateProductionCategory[0]->category_name . ', Tags: (' . implode(', ', $listTag->toArray()) . '), dan Harga: ' . $harga  . '. Berhasil dipindahkan ke Pengiriman dengan Nomor Invoice: ' . $productData['invoice'] . ', dan Jumlah: ' . $productData['quantity'] . '.'
             ]);
             DB::commit();
-            return redirect()->route('delivery.show')->with('success', 'Product berhasil dipindahkan ke delivery.');
+            return redirect()->route('delivery.show')->with('success', 'Produk berhasil dipindahkan ke Pengiriman.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('stock.show')->with('error', 'Terjadi kesalahan saat memindahkan produk ke stock.');
+            return redirect()->route('stock.show')->with('error', 'Terjadi kesalahan saat memindahkan produk ke Pengiriman.');
         }
     }
 
@@ -520,7 +520,7 @@ class StockController extends Controller
                             'action' => 'edit',
                             'category' => 'stock',
                             'sku' => $productData['sku'],
-                            'keterangan' => '111 Produk dengan SKU: ' . $productData['sku'] .
+                            'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] .
                                 ' dan Nama Produk: ' . $MASTERDATA_DATABASE_NAMA . '. Berhasil ubah Nama Produk menjadi: ' . $MASTERDATA_BARU_NAMA . '.'
                         ]);
                         DB::commit();
@@ -530,21 +530,21 @@ class StockController extends Controller
                             'action' => 'edit',
                             'category' => 'stock',
                             'sku' => $productData['sku'],
-                            'keterangan' => '222 Produk dengan SKU: ' . $productData['sku'] .
+                            'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] .
                                 ' Kategori: ' . $categorySelected . ' Tags: (' . implode(', ', $TAGLAMA) . '), Harga: ' . $hargaAwal .
                                 ', dan Jumlah: ' . $MASTERDATA_DATABASE_QUANTITY .
                                 '. Berhasil diubah menjadi Tags: (' . implode(', ', $listTag->toArray()) .
                                 '), Harga: ' . $harga . ', dan Jumlah: ' . $productData['quantity'] . '.'
                         ]);
                         DB::commit();
-                        return Redirect::route('stock.show')->with('success', 'Stock berhasil diubah');
+                        return Redirect::route('stock.show')->with('success', 'Data Stok berhasil diubah');
                     } else {
                         Logging::create([
                             'user_id' => $request->user()->id,
                             'action' => 'edit',
                             'category' => 'stock',
                             'sku' => $productData['sku'],
-                            'keterangan' => '333 Produk dengan SKU: ' . $productData['sku'] .
+                            'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] .
                                 ', Kategori: ' . $categorySelected . ', Tags: (' . implode(', ', $TAGLAMA) . '), Harga: ' . $hargaAwal . ', dan Jumlah: ' . $MASTERDATA_DATABASE_QUANTITY . '. Berhasil diubah menjadi Tags: (' . implode(', ', $listTag->toArray()) .
                                 '), Harga: ' . $hargaBaru . ', dan Jumlah: ' . $MASTERDATA_BARU_QUANTITY . '.'
                         ]);
@@ -556,7 +556,7 @@ class StockController extends Controller
                             'action' => 'edit',
                             'category' => 'stock',
                             'sku' => $productData['sku'],
-                            'keterangan' => '444 Produk dengan SKU: ' . $productData['sku'] .
+                            'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] .
                                 ' Kategori: ' . $categorySelected . ' Tags: (' . implode(', ', $TAGLAMA) . '), Harga: ' . $hargaAwal .
                                 ', dan Jumlah: ' . $MASTERDATA_DATABASE_QUANTITY .
                                 '. Berhasil diubah menjadi Tags: (' . implode(', ', $listTag->toArray()) .
@@ -564,7 +564,7 @@ class StockController extends Controller
                         ]);
                         DB::commit();
                     }
-                    return Redirect::route('stock.show')->with('success', 'Stock berhasil diubah');
+                    return Redirect::route('stock.show')->with('success', 'Data Stok berhasil diubah');
                 } else {
                     DB::rollBack();
                     return Redirect::route('stock.show')->with('error', 'Error! Data dengan sku dan Tags tersebut sudah ada.');
@@ -614,7 +614,7 @@ class StockController extends Controller
                         'action' => 'edit',
                         'category' => 'stock',
                         'sku' => $productData['sku'],
-                        'keterangan' => '555 Produk dengan SKU: ' . $productData['sku'] .
+                        'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] .
                             ' dan Nama Produk: ' . $MASTERDATA_DATABASE_NAMA . '. Berhasil ubah Nama Produk menjadi: ' . $MASTERDATA_BARU_NAMA . '.'
                     ]);
                     DB::commit();
@@ -624,16 +624,16 @@ class StockController extends Controller
                     'action' => 'edit',
                     'category' => 'stock',
                     'sku' => $productData['sku'],
-                    'keterangan' => '666 Produk dengan SKU: ' . $productData['sku'] .
+                    'keterangan' => 'Produk dengan SKU: ' . $productData['sku'] .
                         ', Kategori: ' . $categorySelected . ', Tags: (' . implode(', ', $TAGLAMA) . '), Harga: ' . $hargaAwal . ', dan Jumlah: ' . $MASTERDATA_DATABASE_QUANTITY . '. Berhasil diubah menjadi Tags: (' . implode(', ', $listTag) .
                         '), Harga: ' . $harga . ', dan Jumlah: ' . $productData['quantity'] . '.'
                 ]);
                 DB::commit();
-                return Redirect::route('stock.show')->with('success', 'Berhasil mengubah data stock.');
+                return Redirect::route('stock.show')->with('success', 'Berhasil mengubah data Stok.');
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            return Redirect::route('stock.show')->with('error', 'Terjadi kesalahan saat mengubah data stock.');
+            return Redirect::route('stock.show')->with('error', 'Terjadi kesalahan saat mengubah data Stok.');
         }
     }
 
@@ -669,10 +669,10 @@ class StockController extends Controller
             ]);
             $stock->delete();
             DB::commit();
-            return Redirect::route('stock.show')->with('success', 'Berhasil menghapus data stock.');
+            return Redirect::route('stock.show')->with('success', 'Berhasil menghapus data Stok.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return Redirect::route('stock.show')->with('error', 'Terjadi kesalahan saat menghapus data stock.');
+            return Redirect::route('stock.show')->with('error', 'Terjadi kesalahan saat menghapus data Stok.');
         }
     }
 }

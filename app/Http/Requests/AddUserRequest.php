@@ -32,4 +32,26 @@ class AddUserRequest extends FormRequest
             ],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Nama Pengguna wajib diisi',
+            'name.string' => 'Nama Pengguna harus berupa teks',
+            'name.min' => 'Nama Pengguna harus memiliki minimal 1 karakter',
+            'name.max' => 'Nama Pengguna tidak boleh lebih dari 100 karakter',
+
+            'username.required' => 'Username wajib diisi',
+            'username.string' => 'Username harus berupa teks',
+            'username.min' => 'Username harus memiliki minimal 1 karakter',
+            'username.max' => 'Username tidak boleh lebih dari 50 karakter',
+
+            'password.required' => 'Password wajib diisi',
+            'password.string' => 'Password harus berupa teks',
+            'password.min' => 'Password harus memiliki minimal 1 karakter',
+            'password.max' => 'Password tidak boleh lebih dari 255 karakter',
+
+            'role.required' => 'Role wajib diisi',
+        ];
+    }
 }

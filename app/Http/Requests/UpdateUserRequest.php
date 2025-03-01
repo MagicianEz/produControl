@@ -25,11 +25,26 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'min:1', 'max:100'],
             'username' => ['required', 'string', 'min:1', 'max:50'],
-            'password' => ['nullable', 'string', 'min:1', 'max:255'],
+            'password' => ['required', 'string', 'min:1', 'max:255'],
             'role' => [
                 'required',
                 Rule::in(['admin', 'operator', 'marketing']),
             ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Nama Pengguna wajib diisi',
+            'name.string' => 'Nama Pengguna harus berupa teks',
+            'name.min' => 'Nama Pengguna harus memiliki minimal 1 karakter',
+            'name.max' => 'Nama Pengguna tidak boleh lebih dari 100 karakter',
+
+            'password.required' => 'Password wajib diisi',
+            'password.string' => 'Password harus berupa teks',
+            'password.min' => 'Password harus memiliki minimal 1 karakter',
+            'password.max' => 'Password tidak boleh lebih dari 255 karakter',
         ];
     }
 }

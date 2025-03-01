@@ -261,8 +261,6 @@ export const columns: ColumnDef<User>[] = [
         header: () => {},
         cell: ({ row }) => {
             const text: string = row.getValue("log_keterangan");
-            const regex = /\b(ke Production|ke Stock|ke Delivery)\b/;
-            const match = text.match(regex)?.[0] || "";
             const aksi: string = row.getValue("log_action");
             const category: string = row.getValue("log_category");
             let tujuan: string = "";
@@ -274,13 +272,17 @@ export const columns: ColumnDef<User>[] = [
                     tujuan = category;
                     break;
                 case "move":
-                    tujuan = match.split(" ")[1].toLowerCase();
+                    if (category === "production") {
+                        tujuan = "stock";
+                    } else {
+                        tujuan = "delivery";
+                    }
                     break;
                 case "merge":
                     tujuan = "stock";
                     break;
                 case "retur":
-                    tujuan = match.split(" ")[1].toLowerCase();
+                    tujuan = "stock";
                     break;
                 case "hapus":
                     tujuan = "";
@@ -289,7 +291,7 @@ export const columns: ColumnDef<User>[] = [
                     break;
             }
             const sku: string = row.getValue("log_sku");
-            const resiRegex = /Nomor Nomor Invoice: ([\w-_]+)/;
+            const resiRegex = /Nomor\s*Invoice[:：]?\s*([\w\d-_]+)/i;
             const resi = text.match(resiRegex);
             let invoice = "";
             if (resi && resi[1]) {
@@ -297,15 +299,7 @@ export const columns: ColumnDef<User>[] = [
             }
             return aksi === "hapus" ? (
                 <p></p>
-            ) : // : aksi === "move" && tujuan === "delivery" ? (
-            //     <Link
-            //         className="text-nowrap pr-6 text-blue-600 hover:text-blue-700 hover:underline"
-            //         href={route("delivery.show", { search: sku, isSku: true })}
-            //     >
-            //         Lihat data
-            //     </Link>
-            // )
-            tujuan === "production" ? (
+            ) : tujuan === "production" ? (
                 <Link
                     className="text-nowrap pr-6 text-blue-600 hover:text-blue-700 hover:underline"
                     href={route("production.show", { search: sku })}
@@ -381,7 +375,7 @@ export function DataTableLogging({ data }: { data: any[] }) {
             rowSelection,
         },
         initialState: {
-            pagination: { pageSize: 20 },
+            pagination: { pageSize: 10 },
         },
     });
 
@@ -613,7 +607,7 @@ export function DataTableLogging({ data }: { data: any[] }) {
             <div className="flex items-center justify-between space-x-2 py-4">
                 <div className="flex flex-col">
                     <div className="flex-1 text-sm text-muted-foreground">
-                        {table.getFilteredRowModel().rows.length} Total log.
+                        {table.getFilteredRowModel().rows.length} total log.
                     </div>
                 </div>
                 <div className="flex flex-col gap-2">

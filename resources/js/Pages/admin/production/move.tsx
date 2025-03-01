@@ -48,14 +48,6 @@ export default function ProductMoveDashboard({
     product: any;
     categoriesWithTags: CategoryWithTagsType[];
 }>) {
-    console.log({
-        appName,
-        appTitle,
-        nameUser,
-        roleUser,
-        product,
-        categoriesWithTags,
-    });
 
     const appTitleArray: string[] = appTitle.split(" ");
     const title: string | undefined = appTitleArray.shift();
@@ -63,7 +55,6 @@ export default function ProductMoveDashboard({
     const titleRev: string = subTitle + " " + title;
 
     const [tags, setTags] = useState<{ id: number; name: string }[]>([]);
-    const [errorQuantity, setErrorQuantity] = useState(false);
     const [dataExist, setDataExist] = useState(false);
 
     const { data, setData, reset, errors, processing, post, patch } = useForm<{
@@ -81,10 +72,6 @@ export default function ProductMoveDashboard({
         quantity: 0,
         price: 0,
     });
-
-    useEffect(() => {
-        setErrorQuantity(data.quantity > product.quantity);
-    }, [data.quantity]);
 
     useEffect(() => {
         setData("tags", []);
@@ -259,12 +246,16 @@ export default function ProductMoveDashboard({
                                     )
                                 )}
                             </div>
+                            <InputError
+                                message={errors.tags}
+                                    className="mt-2"
+                            />
                         </div>
                     )}
 
                     <div className="grid w-full max-w-sm items-center gap-2">
                         <Label htmlFor="sku">
-                            Maksimal Jumlah Yang Bisa Dipindahkan
+                            Jumlah Produksi Saat Ini
                         </Label>
                         <Input
                             type="text"
@@ -277,7 +268,7 @@ export default function ProductMoveDashboard({
                     </div>
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="quantity">Jumlah</Label>
+                        <Label htmlFor="quantity">Jumlah Produk</Label>
                         <Input
                             type="text"
                             id="quantity"
@@ -302,16 +293,10 @@ export default function ProductMoveDashboard({
                             message={errors.quantity}
                             className="mt-2"
                         />
-                        {errorQuantity && (
-                            <InputError
-                                message="*Jumlah yang dimasukkan lebih besar dari pada jumlah yang ada di production"
-                                className="mt-2"
-                            />
-                        )}
                     </div>
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="price">Harga Satuan</Label>
+                        <Label htmlFor="price">Harga Satuan Produk</Label>
                         <Input
                             type="text"
                             id="price"
@@ -329,28 +314,33 @@ export default function ProductMoveDashboard({
                                 setData("price", parseInt(value) || 0);
                             }}
                             value={formatCurrency(data.price)}
-                            disabled={errorQuantity || dataExist}
+                            disabled={dataExist}
                         />
                         <InputError message={errors.price} className="mt-2" />
                     </div>
 
+                    {dataExist && (
+                        <div className="grid w-full max-w-sm items-center gap-2">
+                            <p className="text-xs mt-2 text-red-600">
+                                Data dengan SKU{" "}
+                                <span className="font-semibold">
+                                    {data.sku}
+                                </span>{" "}
+                                dan Tags yang dipilih ditemukan pada Stok. Jika Anda
+                                melakukan move to stock, data ini akan dimasukkan ke
+                                data Stok yang memiliki SKU dan Tags yang sama!
+                            </p>
+                        </div>
+                    )}
+
                     <Button
                         type="submit"
-                        disabled={
-                            processing ||
-                            errorQuantity ||
-                            !data.production_id ||
-                            !data.sku ||
-                            !data.category_id ||
-                            data.tags.length === 0 ||
-                            !data.quantity ||
-                            !data.price
-                        }
+                        disabled={processing}
                         className={`inline-flex items-center rounded-md border border-transparent bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gray-700 focus:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-gray-900 ${
                             processing && "opacity-25"
                         } `}
                     >
-                        SIMPAN
+                        MOVE
                     </Button>
                 </form>
             </div>

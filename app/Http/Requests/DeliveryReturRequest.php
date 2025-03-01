@@ -30,4 +30,13 @@ class DeliveryReturRequest extends FormRequest
             'tags' => ['required', 'array'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'quantity.required' => 'Jumlah Produk harus diisi',
+            'quantity.integer' => 'Jumlah Produk harus berupa angka',
+            'quantity.min' => 'Jumlah Produk minimal harus 1',
+        ];
+    }
 }

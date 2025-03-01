@@ -24,10 +24,29 @@ class ProductMoveRequest extends FormRequest
         return [
             'production_id' => ['required', 'integer', 'min:1'],
             'sku' => ['required', 'string', 'min:1', 'max:20'],
-            'category_id' => ['required', 'integer', 'gt:0'],
+            'category_id' => ['required', 'integer'],
             'tags' => ['required', 'array'],
-            'quantity' => ['required', 'integer', 'gt:0'],
-            'price' => ['required', 'integer', 'gt:0'],
+            'quantity' => ['required', 'integer', 'min:1'],
+            'price' => ['required', 'integer', 'min:1'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'category_id.required' => 'Harap pilih kategori',
+            'category_id.integer' => 'Kategori harus berupa angka',
+
+            'tags.required' => 'Harap pilih minimal 1 Tag',
+            'tags.array' => 'Format Tags tidak valid',
+
+            'quantity.required' => 'Jumlah Produk harus diisi',
+            'quantity.integer' => 'Jumlah Produk harus berupa angka',
+            'quantity.min' => 'Jumlah Produk minimal harus 1',
+
+            'price.required' => 'Harga Satuan Produk harus diisi',
+            'price.integer' => 'Harga Satuan Produk harus berupa angka',
+            'price.min' => 'Harga Satuan Produk minimal harus Rp 1'
         ];
     }
 }

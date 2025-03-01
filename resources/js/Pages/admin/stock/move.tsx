@@ -36,7 +36,6 @@ export default function StockMoveDashboard({
     const subTitle: string = appTitleArray.join(" ");
     const titleRev: string = subTitle + " " + title;
 
-    const [jumlahError, setJumlahError] = useState<boolean>(false);
     const { data, setData, reset, errors, processing, post, patch } = useForm<{
         invoice: string;
         stock_id: number;
@@ -46,10 +45,6 @@ export default function StockMoveDashboard({
         stock_id: Number(product.stock_id),
         quantity: 0,
     });
-
-    useEffect(() => {
-        setJumlahError(data.quantity > product.quantity);
-    }, [data.quantity]);
 
     const submit = (e: any) => {
         e.preventDefault();
@@ -89,11 +84,15 @@ export default function StockMoveDashboard({
                         <Input
                             type="text"
                             id="invoice"
-                            placeholder="Masukkan nomor resi pengiriman"
+                            placeholder="Masukkan nomor invoice pengiriman"
                             value={data.invoice}
                             onChange={(
                                 event: React.ChangeEvent<HTMLInputElement>
                             ) => setData("invoice", event.target.value)}
+                        />
+                        <InputError
+                            message={errors.invoice}
+                            className="mt-2"
                         />
                     </div>
 
@@ -131,7 +130,7 @@ export default function StockMoveDashboard({
                     </div>
 
                     <div className="grid w-full lg:max-w-lg items-center gap-2">
-                        <Label htmlFor="price">Harga Satuan</Label>
+                        <Label htmlFor="price">Harga Satuan Produk</Label>
                         <Input
                             type="text"
                             id="price"
@@ -153,7 +152,7 @@ export default function StockMoveDashboard({
                     </div>
 
                     <div className="grid w-full lg:max-w-lg items-center gap-2">
-                        <Label htmlFor="quantity">Jumlah</Label>
+                        <Label htmlFor="quantity">Jumlah Produk</Label>
                         <Input
                             type="text"
                             id="quantity"
@@ -178,17 +177,10 @@ export default function StockMoveDashboard({
                             message={errors.quantity}
                             className="mt-2"
                         />
-
-                        {jumlahError && (
-                            <InputError
-                                message="Jumlah barang yang dikirimkan tidak boleh melebihi dari jumlah stock"
-                                className="mt-2"
-                            />
-                        )}
                     </div>
 
                     <div className="grid w-full lg:max-w-lg items-center gap-2">
-                        <Label htmlFor="total_price">Total Harga</Label>
+                        <Label htmlFor="total_price">Total Harga Produk</Label>
                         <Input
                             type="text"
                             id="total_price"
@@ -202,18 +194,12 @@ export default function StockMoveDashboard({
 
                     <Button
                         type="submit"
-                        disabled={
-                            processing ||
-                            jumlahError ||
-                            !data.invoice ||
-                            !data.stock_id ||
-                            !data.quantity
-                        }
+                        disabled={processing}
                         className={`inline-flex items-center rounded-md border border-transparent bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gray-700 focus:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-gray-900 ${
                             processing && "opacity-25"
                         } `}
                     >
-                        SIMPAN
+                        MOVE
                     </Button>
                 </form>
             </div>

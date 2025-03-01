@@ -53,6 +53,12 @@ export default function Login() {
                                             setData("username", e.target.value)
                                         }
                                         required
+                                        onInvalid={(e) => {
+                                            (e.target as HTMLInputElement).setCustomValidity("The credential is required");
+                                        }}
+                                        onInput={(e) => {
+                                            (e.target as HTMLInputElement).setCustomValidity("");
+                                        }}
                                     />
 
                                     <InputError
@@ -81,6 +87,13 @@ export default function Login() {
                                         onChange={(e) =>
                                             setData("password", e.target.value)
                                         }
+                                        required
+                                        onInvalid={(e) => {
+                                            (e.target as HTMLInputElement).setCustomValidity("The credential is required");
+                                        }}
+                                        onInput={(e) => {
+                                            (e.target as HTMLInputElement).setCustomValidity("");
+                                        }}
                                     />
                                 </div>
                                 <Button

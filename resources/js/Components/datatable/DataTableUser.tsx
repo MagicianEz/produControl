@@ -194,7 +194,7 @@ export function DataTable({ data }: { data: any[] }) {
             rowSelection,
         },
         initialState: {
-            pagination: { pageSize: 20 },
+            pagination: { pageSize: 10 },
         },
     });
 
@@ -383,7 +383,7 @@ export function DataTable({ data }: { data: any[] }) {
             <div className="flex items-center justify-between space-x-2 py-4">
                 <div className="flex flex-col">
                     <div className="flex-1 text-sm text-muted-foreground">
-                        {table.getFilteredRowModel().rows.length} Total user
+                        {table.getFilteredRowModel().rows.length} total akun
                         terdaftar.
                     </div>
                 </div>

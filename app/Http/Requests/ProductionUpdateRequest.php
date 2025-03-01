@@ -24,9 +24,26 @@ class ProductionUpdateRequest extends FormRequest
         return [
             'sku' => ['required', 'string', 'min:1', 'max:20'],
             'product_name' => ['required', 'string', 'min:1', 'max:50'],
+            'category_id' => ['required', 'integer'],
+            'tags' => ['required', 'array'],
             'quantity' => ['required', 'integer', 'min:1'],
-            'category_id' => ['required', 'integer', 'min:1'],
-            'tags' => ['required', 'array', 'min:1'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'product_name.required' => 'Nama Produk wajib diisi',
+            'product_name.string' => 'Nama Produk harus berupa teks',
+            'product_name.min' => 'Nama Produk harus memiliki minimal 1 karakter',
+            'product_name.max' => 'Nama Produk tidak boleh lebih dari 50 karakter',
+
+            'tags.required' => 'Harap pilih minimal 1 Tag',
+            'tags.array' => 'Format Tags tidak valid',
+
+            'quantity.required' => 'Jumlah Produk harus diisi',
+            'quantity.integer' => 'Jumlah Produk harus berupa angka',
+            'quantity.min' => 'Jumlah Produk minimal harus 1'
         ];
     }
 }

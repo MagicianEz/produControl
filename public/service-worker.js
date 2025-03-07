@@ -1,62 +1,93 @@
 self.addEventListener("install", (event) => {
     event.waitUntil(
-        fetch("/asset-manifest.json")
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Gagal mengambil daftar assets: " + response.statusText);
-                }
-                return response.json();
-            })
-            .then((manifest) => {
-                return caches.open("offline-cache").then((cache) => {
-                    let filesToCache = [
-                        "/offline.html",
-                        "/manifest.json",
-                        "/assets/images/icon.jpg",
-                        "/assets/images/web.png",
-                        "/",
-                        "/dashboard",
-                        "/dashboard/category",
-                        "/dashboard/stock",
-                        "/dashboard/production",
-                        "/dashboard/delivery",
-                        "/dashboard/user"
-                    ];
-
-                    Object.values(manifest.files).forEach((file) => {
-                        filesToCache.push(file);
-                    });
-
-                    return cache.addAll(filesToCache);
-                });
-            })
-            .catch((error) => {
-                console.error("[Service Worker] Gagal mengambil daftar assets:", error);
-            })
+        caches.open("offline-cache").then((cache) => {
+            return cache.addAll([
+                "/offline.html",
+                "/manifest.json",
+                "/assets/images/icon.jpg",
+                "/assets/images/web.png",
+                "/",
+                "/dashboard",
+                "/dashboard/category",
+                "/dashboard/stock",
+                "/dashboard/production",
+                "/dashboard/delivery",
+                "/build/assets/AdminLayout-BhBAE5QR.js",
+                "/build/assets/app-CU4SV4jZ.css",
+                "/build/assets/app-X2YEo5ur.js",
+                "/build/assets/Card-C6ZUuSBe.js",
+                "/build/assets/createLucideIcon-EiEJBFdC.js",
+                "/build/assets/index-DW0AXzQJ.js",
+                "/build/assets/index-ZSF_6mWq.js",
+                "/build/assets/Label-DKK-37-_.js",
+                "/build/assets/transition-eQR-OGk1.js",
+                "/build/assets/Table-D9bn6Wdu.js",
+                "/build/assets/Select-Csixy0sL.js",
+                "/build/assets/Badge-ClsX21DK.js",
+                "/build/assets/react-select.esm-Dmjbj_0X.js",
+                "/build/assets/ellipsis-CnZ1XhoW.js",
+                "/build/assets/Dashboard-Ce2Lz2cW.js",
+                "/build/assets/page-BIqkKZav.js",
+                "/build/assets/page-CifPcJHr.js",
+                "/build/assets/page-D1fk8oTu.js",
+                "/build/assets/Popover-DZpoblEd.js",
+                "/build/assets/page-Der6iYVo.js",
+                "/build/assets/page-DsnVB_0o.js",
+                "/build/assets/utils-BM_CldAA.js",
+                "/build/assets/Welcome-BGpgunek.js"
+            ]);
+        })
     );
+    self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    if (cacheName !== "offline-cache") {
+                        console.log("[Service Worker] Menghapus cache lama:", cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        })
+    );
+    self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
-    event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            // Jika ditemukan di cache, gunakan cache
-            if (cachedResponse) {
-                return cachedResponse;
-            }
+    if (event.request.method !== "GET") {
+        console.log("[Service Worker] Melewatkan request non-GET:", event.request.url);
+        return;
+    }
 
-            // Jika tidak ada di cache, coba ambil dari jaringan
-            return fetch(event.request)
-                .then((networkResponse) => {
-                    return caches.open("offline-cache").then((cache) => {
-                        // Simpan file yang berhasil di-fetch ke dalam cache
-                        cache.put(event.request, networkResponse.clone());
-                        return networkResponse;
-                    });
-                })
-                .catch(() => {
-                    console.warn("[Service Worker] Tidak ada di cache & jaringan gagal:", event.request.url);
-                    return caches.match("/offline.html");
+    event.respondWith(
+        fetch(event.request)
+            .then((networkResponse) => {
+                // if (!networkResponse || networkResponse.status !== 200) {
+                //     console.warn("[Service Worker] Respon jaringan tidak valid:", networkResponse);
+                //     return caches.match("/offline.html");
+                // }
+
+                return caches.open("offline-cache").then((cache) => {
+                    console.log("[Service Worker] Menyimpan respon jaringan ke cache:", event.request.url);
+                    // cache.put(event.request, networkResponse.clone());
+                    return networkResponse;
                 });
-        })
+            })
+            .catch(() => {
+                console.warn("[Service Worker] Gagal mengambil dari jaringan, mencoba dari cache:", event.request.url);
+                return caches.match(event.request).then((cachedResponse) => {
+                    if (cachedResponse) {
+                        console.log("[Service Worker] Mengambil dari cache:", event.request.url);
+                        return cachedResponse;
+                    } else {
+                        console.log("[Service Worker] Menampilkan halaman offline.");
+                        return caches.match("/offline.html");
+                    }
+                });
+            })
     );
 });

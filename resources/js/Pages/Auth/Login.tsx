@@ -71,12 +71,12 @@ export default function Login() {
                                         <Label htmlFor="password">
                                             Password
                                         </Label>
-                                        <a
+                                        {/* <a
                                             href="#"
                                             className="ml-auto inline-block text-sm underline"
                                         >
                                             Lupa password?
-                                        </a>
+                                        </a> */}
                                     </div>
                                     <Input
                                         id="password"

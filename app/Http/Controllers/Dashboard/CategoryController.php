@@ -109,7 +109,7 @@ class CategoryController extends Controller
             }
 
             DB::commit();
-            return Redirect::route('category.show')->with('success', 'Kategori Produksi berhasil dibuat.');
+            return Redirect::route('category.show')->with('success', 'Kategori berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollBack();
             return Redirect::route('category.show')->with('error', 'Terjadi kesalahan saat membuat kategori.');
@@ -308,7 +308,7 @@ class CategoryController extends Controller
             Tag::where('category_id', $id)->delete();
             $category->delete();
             DB::commit();
-            return Redirect::route('category.show')->with('success', 'Kategori dan tag berhasil dihapus.');
+            return Redirect::route('category.show')->with('success', 'Kategori berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
             return Redirect::route('category.show')->with('error', 'Terjadi kesalahan saat mengubah data kategori.');

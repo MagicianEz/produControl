@@ -16,7 +16,6 @@ export default function Welcome({ auth }: { auth: any }) {
                     <HeroSection />
                     <FeaturesSection />
                     <IntegrationSection />
-                    <TestimonialSection />
                 </main>
                 <SiteFooter />
             </div>

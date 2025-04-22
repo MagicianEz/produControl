@@ -3,7 +3,6 @@ import { PageProps } from "@/types";
 import { Head, usePage } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { DataTableDelivery } from "@/Components/datatable/DataTableDelivery";
-// import { saveData, getData } from "@/lib/indexedDb";
 
 interface FlashType extends PageProps {
     flash: {
@@ -13,19 +12,16 @@ interface FlashType extends PageProps {
 }
 
 interface Product {
-    master_id: number;
-    sku: string;
-    category_id: number;
-    category_name: string;
-    product_name: string;
-    product_quantity: number;
-    product_price: number;
-    tags: { id: number; name: string }[];
+    sales_id: number;
+    invoice: string;
+    customer_name: string;
+    grand_total: number;
+    delivery_status: string;
     created_at: Date;
     updated_at: Date;
 }
 
-export default function DeliveryDashboard({
+export default function SalesDashboard({
     appName,
     appTitle,
     nameUser,
@@ -33,7 +29,6 @@ export default function DeliveryDashboard({
     search,
     isSku = false,
     products,
-    allCategory,
 }: PageProps<{
     appName: string;
     appTitle: string;
@@ -42,7 +37,6 @@ export default function DeliveryDashboard({
     search: string;
     isSku: boolean;
     products: Product[];
-    allCategory: { value: string; label: string }[];
 }>) {
     const [data, setData] = useState<any>([]);
     const [flashMessage, setFlashMessage] = useState<FlashType["flash"]>({
@@ -63,41 +57,9 @@ export default function DeliveryDashboard({
         const dataProduction = products.map((product, index) => ({
             ...product,
             no: index + 1,
-            sku: product.sku,
-            nama_produk: product.product_name,
-            kategori: product.category_name,
-            jumlah: product.product_quantity,
-            total_harga: product.product_price,
         }));
         setData(dataProduction);
     }, []);
-
-    // useEffect(() => {
-    //     const saveToIndexedDB = async () => {
-    //         const dataProduction = products.map((product, index) => ({
-    //             ...product,
-    //             no: index + 1,
-    //             sku: product.sku,
-    //             nama_produk: product.product_name,
-    //             kategori: product.category_name,
-    //             jumlah: product.product_quantity,
-    //             total_harga: product.product_price,
-    //         }));
-    //         await saveData("delivery", dataProduction);
-    //         setData(dataProduction);
-    //     };
-
-    //     const fetchFromIndexedDB = async () => {
-    //         const storedData = await getData("delivery");
-    //         if (storedData.length > 0) {
-    //             setData(storedData);
-    //         } else {
-    //             saveToIndexedDB();
-    //         }
-    //     };
-
-    //     fetchFromIndexedDB();
-    // }, [products]);
 
     return (
         <AdminLayout
@@ -106,9 +68,9 @@ export default function DeliveryDashboard({
             name={nameUser}
             role={roleUser}
             breadcumb1={"Aplikasi"}
-            breadcumb2={"Pengiriman"}
+            breadcumb2={"Penjualan"}
         >
-            <Head title={"Pengiriman"} />
+            <Head title={"Penjualan"} />
             {flashMessage.success && (
                 <p className="w-full rounded-md text-sm py-3 px-4 capitalize text-green-800 bg-green-300">
                     {flash.success}
@@ -120,11 +82,10 @@ export default function DeliveryDashboard({
                 </p>
             )}
             <div className="p-4">
-                <h1 className="font-semibold mb-4">PENGIRIMAN</h1>
+                <h1 className="font-semibold mb-4">PENJUALAN</h1>
                 <DataTableDelivery
                     data={data}
                     role={roleUser}
-                    allCategory={allCategory}
                     search={search}
                     isSku={isSku}
                 />

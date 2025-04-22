@@ -43,17 +43,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/Components/ui/Select";
-import { default as SelectTwo } from "react-select";
 
 interface Product {
-    master_id: number;
-    category_id: number;
-    category_name: string;
-    product_name: string;
-    product_quantity: number;
-    sku: string;
-    tags: { id: number; name: string }[];
-    product_price: number;
+    sales_id: number;
+    invoice: string;
+    customer_name: string;
+    grand_total: number;
+    delivery_status: string;
     created_at: Date;
     updated_at: Date;
 }
@@ -153,7 +149,7 @@ export const columns: ColumnDef<any>[] = [
         ),
     },
     {
-        accessorKey: "sku",
+        accessorKey: "customer_name",
         header: ({ column }) => {
             return (
                 <Button
@@ -162,75 +158,17 @@ export const columns: ColumnDef<any>[] = [
                         column.toggleSorting(column.getIsSorted() === "asc")
                     }
                 >
-                    SKU
+                    Nama Pembeli
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             );
         },
         cell: ({ row }) => (
-            <div className="capitalize">{row.getValue("sku")}</div>
+            <div className="capitalize">{row.getValue("customer_name")}</div>
         ),
     },
     {
-        accessorKey: "nama_produk",
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() =>
-                        column.toggleSorting(column.getIsSorted() === "asc")
-                    }
-                >
-                    Nama Produk
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-            );
-        },
-        cell: ({ row }) => (
-            <div className="capitalize">{row.getValue("nama_produk")}</div>
-        ),
-    },
-    {
-        accessorKey: "kategori",
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() =>
-                        column.toggleSorting(column.getIsSorted() === "asc")
-                    }
-                >
-                    Kategori
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-            );
-        },
-        cell: ({ row }) => (
-            <div className="capitalize">{row.getValue("kategori")}</div>
-        ),
-        filterFn: customTagsFilter,
-    },
-    {
-        accessorKey: "jumlah",
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() =>
-                        column.toggleSorting(column.getIsSorted() === "asc")
-                    }
-                >
-                    Jumlah
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-            );
-        },
-        cell: ({ row }) => (
-            <div className="capitalize">{row.getValue("jumlah")}</div>
-        ),
-    },
-    {
-        accessorKey: "total_harga",
+        accessorKey: "grand_total",
         header: ({ column }) => {
             return (
                 <Button
@@ -251,12 +189,12 @@ export const columns: ColumnDef<any>[] = [
                     currency: "IDR",
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
-                }).format(row.getValue("total_harga"))}
+                }).format(row.getValue("grand_total"))}
             </div>
         ),
     },
     {
-        accessorKey: "status_pengiriman",
+        accessorKey: "delivery_status",
         header: ({ column }) => {
             return (
                 <Button
@@ -271,7 +209,7 @@ export const columns: ColumnDef<any>[] = [
             );
         },
         cell: ({ row }) => {
-            const type: string = row.getValue("status_pengiriman");
+            const type: string = row.getValue("delivery_status");
             const badgeColor =
                 type === "on hold"
                     ? "bg-red-600 hover:bg-red-700"
@@ -301,7 +239,7 @@ export const columns: ColumnDef<any>[] = [
                         column.toggleSorting(column.getIsSorted() === "asc")
                     }
                 >
-                    Tanggal Pengiriman
+                    Tanggal Pembelian
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             );
@@ -330,13 +268,8 @@ export const columns: ColumnDef<any>[] = [
         id: "actions",
         enableHiding: false,
         cell: ({ row }) => {
-            const delivery = row.original;
-            const isSKUExists = dataDeliveryUnique.some(
-                (uniqueDelivery) => uniqueDelivery.sku === delivery.sku
-            );
-            if (!isSKUExists) {
-                dataDeliveryUnique.push(delivery);
-            }
+            const sales = row.original;
+            dataDeliveryUnique.push(sales);
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -348,28 +281,18 @@ export const columns: ColumnDef<any>[] = [
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                         <Link
-                            href={route("delivery.detail.show", {
-                                id: Number(delivery.delivery_id),
+                            href={route("sales.detail.show", {
+                                id: Number(sales.id),
                             })}
                             className="bg-red-500"
                         >
                             <DropdownMenuItem className="cursor-pointer">
-                                Ubah
+                                Detail
                             </DropdownMenuItem>
                         </Link>
                         <Link
-                            href={route("delivery.retur.show", {
-                                id: Number(delivery.delivery_id),
-                            })}
-                            className="bg-red-500"
-                        >
-                            <DropdownMenuItem className="cursor-pointer">
-                                Retur
-                            </DropdownMenuItem>
-                        </Link>
-                        <Link
-                            href={route("delivery.delete.show", {
-                                id: Number(delivery.delivery_id),
+                            href={route("sales.delete.show", {
+                                id: Number(sales.id),
                             })}
                             className="bg-red-500"
                         >
@@ -386,12 +309,9 @@ export const columns: ColumnDef<any>[] = [
 
 type FilterType =
     | "invoice"
-    | "sku"
-    | "name"
-    | "category"
-    | "jumlah"
-    | "total_harga"
-    | "status_pengiriman"
+    | "customer_name"
+    | "grand_total"
+    | "delivery_status"
     | "";
 
 const formatCurrency = (value: any) => {
@@ -408,24 +328,14 @@ type CatTagType = { value: string; label: string };
 export function DataTableDelivery({
     data,
     role,
-    allCategory: ALLCATEGORY,
     search,
     isSku,
 }: {
     data: Product[];
     role: string;
-    allCategory: CatTagType[];
     search: string;
     isSku: boolean;
 }) {
-    const QUANTITY_PRODUCT = data
-        .map((item) => item.product_quantity)
-        .reduce((acc: number, current: number) => acc + current, 0);
-
-    const allCategory = ALLCATEGORY.filter(
-        (item: CatTagType, index: number, self) =>
-            index === self.findIndex((x) => x.value === item.value)
-    );
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [columnFilters, setColumnFilters] =
@@ -440,7 +350,7 @@ export function DataTableDelivery({
     const [maxJumlahHarga, setMaxJumlahHarga] = React.useState<number | "">("");
 
     const searchInvoice = React.useRef<HTMLInputElement>(null);
-    const searchSku = React.useRef<HTMLInputElement>(null);
+    const searchCustomerName = React.useRef<HTMLInputElement>(null);
     const searchName = React.useRef<HTMLInputElement>(null);
     const searchCategory = React.useRef<HTMLInputElement>(null);
     const searchTags = React.useRef<HTMLInputElement>(null);
@@ -450,13 +360,12 @@ export function DataTableDelivery({
     const searchMaxHarga = React.useRef<HTMLInputElement>(null);
 
     React.useEffect(() => {
-        if (isSku) return setFilterName("sku");
         if (search) return setFilterName("invoice");
     }, []);
 
     React.useEffect(() => {
         if (searchInvoice.current) searchInvoice.current.value = "";
-        if (searchSku.current) searchSku.current.value = "";
+        if (searchCustomerName.current) searchCustomerName.current.value = "";
         if (searchName.current) searchName.current.value = "";
         if (searchCategory.current) searchCategory.current.value = "";
         if (searchTags.current) searchTags.current.value = "";
@@ -467,14 +376,10 @@ export function DataTableDelivery({
         setMaxJumlahHarga("");
 
         table.getColumn("invoice")?.setFilterValue("");
-        table.getColumn("sku")?.setFilterValue("");
-        table.getColumn("nama_produk")?.setFilterValue("");
-        table.getColumn("kategori")?.setFilterValue("");
-        table.getColumn("status_pengiriman")?.setFilterValue("");
-        table.getColumn("jumlah")?.setFilterValue(["", ""]);
-        table.getColumn("total_harga")?.setFilterValue(["", ""]);
+        table.getColumn("customer_name")?.setFilterValue("");
+        table.getColumn("grand_total")?.setFilterValue("");
+        table.getColumn("delivery_status")?.setFilterValue("");
 
-        if (isSku) return table.getColumn("sku")?.setFilterValue(search);
         if (search) return table.getColumn("invoice")?.setFilterValue(search);
     }, [filterName]);
 
@@ -519,20 +424,13 @@ export function DataTableDelivery({
                         <SelectContent>
                             <SelectGroup>
                                 <SelectItem value="invoice">Invoice</SelectItem>
-                                <SelectItem value="sku">SKU Produk</SelectItem>
-                                <SelectItem value="name">
-                                    Nama Produk
+                                <SelectItem value="customer_name">
+                                    Nama Pembeli
                                 </SelectItem>
-                                <SelectItem value="category">
-                                    Nama Kategori
-                                </SelectItem>
-                                <SelectItem value="jumlah">
-                                    Jumlah Produk
-                                </SelectItem>
-                                <SelectItem value="total_harga">
+                                <SelectItem value="grand_total">
                                     Total Harga
                                 </SelectItem>
-                                <SelectItem value="status_pengiriman">
+                                <SelectItem value="delivery_status">
                                     Status Pengiriman
                                 </SelectItem>
                             </SelectGroup>
@@ -541,7 +439,7 @@ export function DataTableDelivery({
 
                     {filterName === "invoice" && (
                         <Input
-                            placeholder="Cari delivery berdasarkan invoice..."
+                            placeholder="Cari penjualan berdasarkan invoice..."
                             ref={searchInvoice}
                             value={
                                 (table
@@ -558,67 +456,33 @@ export function DataTableDelivery({
                         />
                     )}
 
-                    {filterName === "sku" && (
+                    {filterName === "customer_name" && (
                         <Input
-                            placeholder="Cari delivery berdasarkan sku produk..."
-                            ref={searchSku}
+                            placeholder="Cari penjualan berdasarkan nama pembeli..."
+                            ref={searchCustomerName}
                             value={
                                 (table
-                                    .getColumn("sku")
+                                    .getColumn("customer_name")
                                     ?.getFilterValue() as string) || ""
                             }
                             onChange={(event) => {
                                 const value = event.target.value;
-                                table.getColumn("sku")?.setFilterValue(value);
+                                table.getColumn("customer_name")?.setFilterValue(value);
                             }}
                             className="max-w-full"
                         />
                     )}
 
-                    {filterName === "name" && (
-                        <Input
-                            placeholder="Cari delivery berdasarkan nama produk..."
-                            ref={searchName}
-                            value={
-                                (table
-                                    .getColumn("nama_produk")
-                                    ?.getFilterValue() as string) || ""
-                            }
-                            onChange={(event) => {
-                                const value = event.target.value;
-                                table
-                                    .getColumn("nama_produk")
-                                    ?.setFilterValue(value);
-                            }}
-                            className="max-w-full"
-                        />
-                    )}
-
-                    {filterName === "category" && (
-                        <SelectTwo
-                            isMulti
-                            name="kategori"
-                            options={allCategory}
-                            className="basic-multi-select h-9 max-w-full rounded-md border bg-transparent text-sm font-normal"
-                            classNamePrefix="select"
-                            onChange={(value: any) =>
-                                table
-                                    .getColumn("kategori")
-                                    ?.setFilterValue(value)
-                            }
-                        />
-                    )}
-
-                    {filterName === "status_pengiriman" && (
+                    {filterName === "delivery_status" && (
                         <Select
                             onValueChange={(value) => {
                                 table
-                                    .getColumn("status_pengiriman")
+                                    .getColumn("delivery_status")
                                     ?.setFilterValue(value);
                             }}
                             value={
                                 (table
-                                    .getColumn("status_pengiriman")
+                                    .getColumn("delivery_status")
                                     ?.getFilterValue() as string) || ""
                             }
                         >
@@ -630,11 +494,11 @@ export function DataTableDelivery({
                                     <SelectItem value="on hold">
                                         On Hold
                                     </SelectItem>
-                                    <SelectItem value="on progress">
-                                        On Progress
+                                    <SelectItem value="in progress">
+                                        In Progress
                                     </SelectItem>
-                                    <SelectItem value="on delivery">
-                                        On Delivery
+                                    <SelectItem value="in delivery">
+                                        In Delivery
                                     </SelectItem>
                                     <SelectItem value="delivered">
                                         Delivered
@@ -644,44 +508,7 @@ export function DataTableDelivery({
                         </Select>
                     )}
 
-                    {filterName === "jumlah" && (
-                        <div className="flex gap-2">
-                            <Input
-                                type="number"
-                                placeholder="Jumlah terendah"
-                                ref={searchMinJumlah}
-                                className="w-1/2"
-                                value={minJumlah}
-                                onChange={(event) => {
-                                    const value = event.target.value
-                                        ? Number(event.target.value)
-                                        : "";
-                                    setMinJumlah(value);
-                                    table
-                                        .getColumn("jumlah")
-                                        ?.setFilterValue([value, maxJumlah]);
-                                }}
-                            />
-                            <Input
-                                type="number"
-                                placeholder="Jumlah tertinggi"
-                                ref={searchMaxJumlah}
-                                className="w-1/2"
-                                value={maxJumlah}
-                                onChange={(event) => {
-                                    const value = event.target.value
-                                        ? Number(event.target.value)
-                                        : "";
-                                    setMaxJumlah(value);
-                                    table
-                                        .getColumn("jumlah")
-                                        ?.setFilterValue([minJumlah, value]);
-                                }}
-                            />
-                        </div>
-                    )}
-
-                    {filterName === "total_harga" && (
+                    {filterName === "grand_total" && (
                         <div className="flex gap-2">
                             <div className="w-1/2 flex-col">
                                 <p className="mt-2 text-sm">
@@ -705,7 +532,7 @@ export function DataTableDelivery({
                                             parseInt(value) || 0;
                                         setMinJumlahHarga(quantityValue);
                                         table
-                                            .getColumn("total_harga")
+                                            .getColumn("grand_total")
                                             ?.setFilterValue([
                                                 value,
                                                 maxJumlahHarga,
@@ -735,7 +562,7 @@ export function DataTableDelivery({
                                             parseInt(value) || 0;
                                         setMaxJumlahHarga(quantityValue);
                                         table
-                                            .getColumn("total_harga")
+                                            .getColumn("grand_total")
                                             ?.setFilterValue([
                                                 minJumlahHarga,
                                                 value,
@@ -745,6 +572,13 @@ export function DataTableDelivery({
                             </div>
                         </div>
                     )}
+                </div>
+                <div className="w-full flex justify-end pr-2">
+                    <Link href={route("sales.add.show")}>
+                        <Button className="bg-white text-gray-700 border hover:bg-gray-100">
+                            Tambah Penjualan
+                        </Button>
+                    </Link>
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -758,11 +592,10 @@ export function DataTableDelivery({
                             .filter((column) => column.getCanHide())
                             .map((column) => {
                                 const columnNames: Record<string, string> = {
-                                    sku: "SKU Produk",
-                                    nama_produk: "Nama Produk",
-                                    total_harga: "Total Harga",
-                                    status_pengiriman: "Status Pengiriman",
-                                    created_at: "Tanggal Pengiriman",
+                                    customer_name: "Nama Pembeli",
+                                    grand_total: "Total Harga",
+                                    delivery_status: "Status Pengiriman",
+                                    created_at: "Tanggal Penjualan",
                                 };
                                 const text =
                                     columnNames[column.id] || column.id;
@@ -834,7 +667,7 @@ export function DataTableDelivery({
                                     colSpan={columns.length}
                                     className="h-24 text-center"
                                 >
-                                    Product tidak ditemukan.
+                                    Penjualan masih kosong.
                                 </TableCell>
                             </TableRow>
                         )}
@@ -844,8 +677,7 @@ export function DataTableDelivery({
             <div className="flex items-center justify-between space-x-2 py-4">
                 <div className="flex flex-col">
                     <div className="flex-1 text-sm text-muted-foreground">
-                        {table.getFilteredRowModel().rows.length} total data
-                        Pengiriman dengan jumlah {QUANTITY_PRODUCT} produk.
+                        {table.getFilteredRowModel().rows.length} total data Penjualan.
                     </div>
                 </div>
                 <div className="flex flex-col gap-2">

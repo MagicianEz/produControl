@@ -48,22 +48,15 @@ import { default as SelectTwo } from "react-select";
 interface Category {
     category_id: number;
     category_name: string;
-    category_type: string;
-    tags: {
+    production_tags: {
+        id: number;
+        name: string;
+    }[];
+    stock_tags: {
         id: number;
         name: string;
     }[];
 }
-
-// const customFilter: FilterFn<any> = (row, columnId, filterValue) => {
-//     const tagsRow = row.getValue(columnId);
-//     if (Array.isArray(tagsRow)) {
-//         return tagsRow.some((tag) =>
-//             tag.name.toLowerCase().includes(filterValue.toLowerCase())
-//         );
-//     }
-//     return false;
-// };
 
 const customTagsFilter: FilterFn<any> = (row, columnId, filterValue) => {
     if (columnId === "nama_kategori") {
@@ -77,20 +70,19 @@ const customTagsFilter: FilterFn<any> = (row, columnId, filterValue) => {
         );
         return match;
     }
-    if (columnId === "tipe_kategori") {
+    if (columnId === "tags_produksi") {
         const filterArray = filterValue.map(
             (item: { value: string; label: string }) => item.value
         );
-        console.log({ filterArray });
-
         const rowTags: any = row.getValue(columnId);
-        const match = filterArray.every(
-            (filterTag: string) =>
-                rowTags.toLowerCase() === filterTag.toLowerCase()
+        const match = filterArray.every((filterTag: string) =>
+            rowTags.some(
+                (tag: any) => tag.name.toLowerCase() === filterTag.toLowerCase()
+            )
         );
         return match;
     }
-    if (columnId === "tags") {
+    if (columnId === "tags_stok") {
         const filterArray = filterValue.map(
             (item: { value: string; label: string }) => item.value
         );
@@ -146,7 +138,7 @@ export const columns: ColumnDef<any>[] = [
         filterFn: customTagsFilter,
     },
     {
-        accessorKey: "tipe_kategori",
+        accessorKey: "tags_produksi",
         header: ({ column }) => {
             return (
                 <Button
@@ -155,31 +147,30 @@ export const columns: ColumnDef<any>[] = [
                         column.toggleSorting(column.getIsSorted() === "asc")
                     }
                 >
-                    Tipe Kategori
+                    Tags Produksi
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             );
         },
         cell: ({ row }) => {
-            const type: string = row.getValue("tipe_kategori");
-            const badgeName = 
-                type === "production"
-                    ? "Produksi"
-            :        "Stok";
-            const badgeColor =
-                type === "production"
-                    ? "bg-blue-600"
-                    : "bg-green-600";
-            return (
-                <Badge className={`text-xs capitalize ${badgeColor}`}>
-                    {badgeName}
-                </Badge>
-            );
+            const tagsRowProduction = row.getValue("tags_produksi");
+            if (Array.isArray(tagsRowProduction)) {
+                return (
+                    <div className="flex gap-1 flex-wrap w-52">
+                        {tagsRowProduction.map((tag, index) => (
+                            <Badge key={index} className="text-xs">
+                                {tag.name}
+                            </Badge>
+                        ))}
+                    </div>
+                );
+            }
+            return null;
         },
         filterFn: customTagsFilter,
     },
     {
-        accessorKey: "tags",
+        accessorKey: "tags_stok",
         header: ({ column }) => {
             return (
                 <Button
@@ -188,17 +179,17 @@ export const columns: ColumnDef<any>[] = [
                         column.toggleSorting(column.getIsSorted() === "asc")
                     }
                 >
-                    Tags
+                    Tags Stok
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             );
         },
         cell: ({ row }) => {
-            const tagsRow = row.getValue("tags");
-            if (Array.isArray(tagsRow)) {
+            const tagsRowStock = row.getValue("tags_stok");
+            if (Array.isArray(tagsRowStock)) {
                 return (
                     <div className="flex gap-1 flex-wrap w-52">
-                        {tagsRow.map((tag, index) => (
+                        {tagsRowStock.map((tag, index) => (
                             <Badge key={index} className="text-xs">
                                 {tag.name}
                             </Badge>
@@ -252,7 +243,7 @@ export const columns: ColumnDef<any>[] = [
     },
 ];
 
-type FilterType = "category" | "type" | "tags" | "";
+type FilterType = "category" | "type" | "tagsProduction" | "tagsStock" | "";
 
 type CatTagType = { value: string; label: string };
 
@@ -265,19 +256,26 @@ export function DataTableCategory({
     data,
     role,
     allCategory: ALLCATEGORY,
-    allTag: ALLTAG,
+    allTagProduction: ALLTAGPRODUCTION,
+    allTagStock: ALLTAGSTOCK,
 }: {
     data: Category[];
     role: string;
     allCategory: CatTagType[];
-    allTag: CatTagType[];
+    allTagProduction: CatTagType[];
+    allTagStock: CatTagType[];
 }) {
     const allCategory = ALLCATEGORY.filter(
         (item: CatTagType, index: number, self) =>
             index === self.findIndex((x) => x.value === item.value)
     );
 
-    const allTag = ALLTAG.filter(
+    const allTagProduction = ALLTAGPRODUCTION.filter(
+        (item: CatTagType, index: number, self) =>
+            index === self.findIndex((x) => x.value === item.value)
+    );
+
+    const allTagStock = ALLTAGSTOCK.filter(
         (item: CatTagType, index: number, self) =>
             index === self.findIndex((x) => x.value === item.value)
     );
@@ -292,16 +290,18 @@ export function DataTableCategory({
 
     const searchCategory = React.useRef<HTMLInputElement>(null);
     const searchType = React.useRef<HTMLInputElement>(null);
-    const searchTags = React.useRef<HTMLInputElement>(null);
+    const searchTagsProduction = React.useRef<HTMLInputElement>(null);
+    const searchTagsStock = React.useRef<HTMLInputElement>(null);
 
     React.useEffect(() => {
         if (searchCategory.current) searchCategory.current.value = "";
         if (searchType.current) searchType.current.value = "";
-        if (searchTags.current) searchTags.current.value = "";
+        if (searchTagsProduction.current) searchTagsProduction.current.value = "";
+        if (searchTagsStock.current) searchTagsStock.current.value = "";
 
         table.getColumn("nama_kategori")?.setFilterValue("");
-        table.getColumn("tipe_kategori")?.setFilterValue("");
-        table.getColumn("tags")?.setFilterValue("");
+        table.getColumn("tags_produksi")?.setFilterValue("");
+        table.getColumn("tags_stok")?.setFilterValue("");
     }, [filterName]);
 
     const table = useReactTable({
@@ -349,7 +349,12 @@ export function DataTableCategory({
                                 <SelectItem value="type">
                                     Tipe Kategori
                                 </SelectItem>
-                                <SelectItem value="tags">Tags</SelectItem>
+                                <SelectItem value="tagsProduction">
+                                    Tags Produksi
+                                </SelectItem>
+                                <SelectItem value="tagsStock">
+                                    Tags Stok
+                                </SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
@@ -369,33 +374,38 @@ export function DataTableCategory({
                         />
                     )}
 
-                    {filterName === "type" && (
+                    {filterName === "tagsProduction" && (
                         <SelectTwo
                             isMulti
-                            name="tipe_kategori"
-                            options={options}
+                            name="tags_produksi"
+                            options={allTagProduction}
                             className="basic-multi-select h-9 max-w-full rounded-md border bg-transparent text-sm font-normal"
                             classNamePrefix="select"
                             onChange={(value: any) =>
-                                table
-                                    .getColumn("tipe_kategori")
-                                    ?.setFilterValue(value)
+                                table.getColumn("tags_produksi")?.setFilterValue(value)
                             }
                         />
                     )}
 
-                    {filterName === "tags" && (
+                    {filterName === "tagsStock" && (
                         <SelectTwo
                             isMulti
-                            name="tags"
-                            options={allTag}
+                            name="tags_stok"
+                            options={allTagStock}
                             className="basic-multi-select h-9 max-w-full rounded-md border bg-transparent text-sm font-normal"
                             classNamePrefix="select"
                             onChange={(value: any) =>
-                                table.getColumn("tags")?.setFilterValue(value)
+                                table.getColumn("tags_stok")?.setFilterValue(value)
                             }
                         />
                     )}
+                </div>
+                <div className="w-full flex justify-end pr-2">
+                    <Link href={route("category.add.show")}>
+                        <Button className="bg-white text-gray-700 border hover:bg-gray-100">
+                            Tambah Kategori
+                        </Button>
+                    </Link>
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

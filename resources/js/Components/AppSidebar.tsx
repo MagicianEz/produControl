@@ -51,11 +51,11 @@ const data = {
                     roleAvailable: "all",
                 },
                 {
-                    title: "Pengiriman",
-                    url: route("delivery.show"),
+                    title: "Penjualan",
+                    url: route("sales.show"),
                     isActive:
                         route(`${route().current()}`) ===
-                        route("delivery.show"),
+                        route("sales.show"),
                     roleAvailable: "all",
                 },
                 {
@@ -81,19 +81,11 @@ const data = {
                     roleAvailable: ["admin", "operator"],
                 },
                 {
-                    title: "Tambah Kategori Produksi",
-                    url: route("production.add.category.show"),
+                    title: "Tambah Kategori",
+                    url: route("category.add.show"),
                     isActive:
                         route(`${route().current()}`) ===
-                        route("production.add.category.show"),
-                    roleAvailable: ["admin", "operator"],
-                },
-                {
-                    title: "Tambah Kategori Stok",
-                    url: route("stock.add.category.show"),
-                    isActive:
-                        route(`${route().current()}`) ===
-                        route("stock.add.category.show"),
+                        route("category.add.show"),
                     roleAvailable: ["admin", "operator"],
                 },
             ],

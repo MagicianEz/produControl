@@ -48,6 +48,7 @@ export default function AddProductDashboard({
     });
 
     useEffect(() => {
+        console.log("Data: ", data);
         axios
             .get(route("api.production.check.product.exist"), {
                 params: {

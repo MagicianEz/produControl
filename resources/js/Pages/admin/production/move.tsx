@@ -7,14 +7,6 @@ import InputError from "@/Components/InputError";
 import { Input } from "@/Components/ui/Input";
 import { Label } from "@/Components/ui/Label";
 import { Button } from "@/Components/ui/Button";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/Components/ui/Select";
 import { Checkbox } from "@/Components/ui/Checkbox";
 import axios from "axios";
 
@@ -67,15 +59,25 @@ export default function ProductMoveDashboard({
     }>({
         production_id: product.production_id,
         sku: product.sku,
-        category_id: null,
+        category_id: product.category_id,
         tags: [],
         quantity: 0,
         price: 0,
     });
 
     useEffect(() => {
-        setData("tags", []);
-    }, [data.category_id]);
+        if (product.category_id) {
+            setData("category_id", product.category_id);
+    
+            const filteredTags = categoriesWithTags
+                .filter((category) => category.id === product.category_id)
+                .flatMap((category) =>
+                    category.tags.map((tag) => ({ id: tag.id, name: tag.name }))
+                );
+    
+            setTags(filteredTags);
+        }
+    }, [product.category_id, categoriesWithTags]);
 
     useEffect(() => {
         if (data.category_id && data.tags.length > 0) {
@@ -116,18 +118,6 @@ export default function ProductMoveDashboard({
             ? [...data.tags, tagId]
             : data.tags.filter((tag) => tag !== tagId);
         setData("tags", updatedTags);
-    };
-
-    const changeCategoryId = (value: any) => {
-        const filteredTags = categoriesWithTags
-            .map((category) =>
-                category.tags
-                    .filter((tag) => tag.category_id === Number(value))
-                    .map((tag) => ({ id: tag.id, name: tag.name }))
-            )
-            .flat();
-        setTags(filteredTags);
-        setData("category_id", Number(value));
     };
 
     const formatCurrency = (value: any) => {
@@ -182,33 +172,14 @@ export default function ProductMoveDashboard({
                     </div>
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="category">Kategori</Label>
-                        <Select
-                            onValueChange={changeCategoryId}
-                            value={data.category_id?.toString()}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Pilih kategori stok" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {categoriesWithTags.map(
-                                        (category: CategoryWithTagsType) => (
-                                            <SelectItem
-                                                key={category.id}
-                                                value={category.id.toString()}
-                                                className="capitalize cursor-pointer"
-                                            >
-                                                {category.name}
-                                            </SelectItem>
-                                        )
-                                    )}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                        <InputError
-                            message={errors.category_id}
-                            className="mt-2"
+                        <Label htmlFor="name">Kategori</Label>
+                        <Input
+                            type="text"
+                            id="name"
+                            placeholder="Kategori"
+                            className="bg-gray-300 font-semibold"
+                            value={product.category_name}
+                            disabled
                         />
                     </div>
 

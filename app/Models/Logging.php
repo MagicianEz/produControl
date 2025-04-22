@@ -16,7 +16,7 @@ class Logging extends Model
         'action',
         'category',
         'sku',
-        'keterangan',
+        'keterangan'
     ];
 
     public function user()

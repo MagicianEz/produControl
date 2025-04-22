@@ -58,21 +58,14 @@ export default function ProductMergeDashboard({
     const [isTyping, setIsTyping] = useState(false);
     const [allCategory, setAllCategory] = useState(categoriesWithTags);
     const [isFetching, setIsFetching] = useState(false);
-    const [dataExistName, setDataExistName] = useState<boolean>(false);
+    const [skuExist, setSkuExist] = useState(false);
     const [dataExist, setDataExist] = useState<boolean>(false);
     const [tags, setTags] = useState<{ id: number; name: string }[]>([]);
-    const [errorMergeList, setErrorMergeList] = useState("");
     const [mergeListError, setMergeListError] = useState(true);
     const [countList, setCountList] = useState<number>(2);
     const [maxQuantity, setMaxQuantity] = useState<number>(
         productSelect.quantity
     );
-    const [skuTags, setSkuTags] = useState<
-        {
-            tag_id: number;
-            tag_name: string;
-        }[]
-    >([]);
     const [mergeList, setMergeList] = useState<
         Array<{ master_id: number | null; production_id: number | null }>
     >([
@@ -145,18 +138,12 @@ export default function ProductMergeDashboard({
 
     const changeMergeList = (value: any) => {
         const [urut, master_id, production_id] = value.split(" - ");
-        setMergeList((prev) => {
-            const newList = [...prev];
-            newList[urut] = {
-                master_id: Number(master_id),
-                production_id: Number(production_id),
-            };
-            return newList;
-        });
-        const mergeListOK = mergeList.every((list) => {
-            return list.master_id && list.production_id;
-        });
-        setMergeListError(mergeListOK);
+        const newList = [...mergeList];
+        newList[parseInt(urut)] = {
+            master_id: Number(master_id),
+            production_id: Number(production_id),
+        };
+        setMergeList(newList);
     };
 
     useEffect(() => {
@@ -164,8 +151,6 @@ export default function ProductMergeDashboard({
         setData("merge_list", data);
         const isNull = mergeList.filter((list) => list === null);
         isNull.length > 0
-            ? setErrorMergeList("Merge list masih ada yang kosong")
-            : setErrorMergeList("");
         const productionIdList = mergeList
             .map((list) => list.production_id)
             .join(",");
@@ -183,111 +168,83 @@ export default function ProductMergeDashboard({
     }, [mergeList]);
 
     useEffect(() => {
+        const isEveryValid = mergeList.every(
+            (list, index) =>
+                list.master_id !== null &&
+                list.production_id !== null &&
+                (index === 0 || list.production_id !== productSelect.production_id)
+        );
+        setMergeListError(!isEveryValid);
+    }, [mergeList, productSelect.production_id]);
+
+    useEffect(() => {
         if (!data.sku) {
-            // Reset semua data jika SKU kosong
-            setData((prev) => ({
-                ...prev,
-                name: "",
-                category_id: null,
-                tags: [],
-            }));
-            setAllCategory(categoriesWithTags); // Tampilkan semua kategori
-            setSkuTags([]);
-            setTags([]);
-            setDataExistName(false);
-            return;
-        }
-    
-        setSkuTags([]);
-        setTags([]);
-        setAllCategory([]); // Kosongkan kategori sementara
-        setData((prev) => ({
-            ...prev,
-            tags: [],
-        }));
-    
-        const timeoutId = setTimeout(async () => {
-            setIsFetching(true);
-            let skuFound = false; // Menyimpan status SKU terakhir
-    
-            try {
-                // **1. Ambil Nama Produk Terlebih Dahulu**
-                const productRes = await axios.get(route("api.product.name"), { params: { sku: data.sku } });
-                const productName = productRes.data.data?.name || "";
-    
-                if (productName) {
-                    setData((prev) => ({
-                        ...prev,
-                        name: productName,
-                    }));
-                    setDataExistName(true);
-                    skuFound = true; // Tandai SKU ditemukan
-                } else {
-                    console.warn("⚠️ Nama produk tidak ditemukan untuk SKU ini.");
-                    setDataExistName(false);
-                    skuFound = false;
-                }
-            } catch (error) {
-                console.warn("⚠️ SKU tidak ditemukan dari API.");
-                setDataExistName(false);
-                skuFound = false;
-            }
-    
-            // **2. Ambil Kategori Stok Jika SKU Ditemukan**
-            if (skuFound) {
-                try {
-                    const categoryRes = await axios.get(route("api.stock.category"), { params: { sku: data.sku } });
-                    const categoryData = categoryRes.data.data?.category || null;
-    
-                    if (categoryData) {
-                        const matchedCategories = categoriesWithTags.filter(
-                            (category) => category.id === categoryData.id
-                        );
-    
-                        if (matchedCategories.length > 0) {
-                            setAllCategory(matchedCategories);
-                            setSkuTags(categoryData.tags);
-    
-                            setTimeout(() => {
-                                setData((prev) => ({
-                                    ...prev,
-                                    category_id: categoryData.id,
-                                }));
-                            }, 100);
-                        } else {
-                            console.warn("⚠️ Kategori stok tidak ditemukan dalam daftar:", categoryData.name);
-                            setAllCategory([]);
-                            setSkuTags([]);
-                            setData((prev) => ({
-                                ...prev,
-                                category_id: null,
-                            }));
-                        }
-                    }
-                } catch (error) {
-                    console.warn("⚠️ SKU ditemukan tetapi kategori stok tidak ditemukan.");
-                    setAllCategory([]); // Kosongkan kategori stok jika tidak ada
-                    setSkuTags([]);
-                }
-            } else {
-                console.warn("⚠️ SKU tidak ditemukan, menampilkan semua kategori.");
-                setAllCategory(categoriesWithTags); // Jika SKU tidak ada, tampilkan semua kategori
+            if (skuExist) {
                 setData((prev) => ({
                     ...prev,
                     name: "",
                     category_id: null,
+                    tags: [],
                 }));
                 setTags([]);
+                setSkuExist(false);
+                setDataExist(false);
             }
-            
-            setIsTyping(false);
-            setIsFetching(false);
+            return;
+        }
+    
+        const timeoutId = setTimeout(() => {
+            setIsFetching(true);
+    
+            axios
+                .get(route("api.product.name"), { params: { sku: data.sku } })
+                .then((productRes) => {
+                    const productName = productRes.data.data?.name || "";
+                    const categoryData = productRes.data.data?.category || null;
+    
+                    const selectedCategory = categoriesWithTags.find(
+                        (category) => category.id === categoryData?.id
+                    );
+    
+                    const filteredTags = selectedCategory
+                        ? selectedCategory.tags.map((tag) => ({
+                              id: tag.id,
+                              name: tag.name,
+                          }))
+                        : [];
+    
+                    setData((prev) => ({
+                        ...prev,
+                        name: productName || "",
+                        category_id: categoryData?.id || null,
+                        tags: [],
+                    }));
+    
+                    setTags(filteredTags);
+                    setSkuExist(true);
+                })
+                .catch(() => {
+                    if (skuExist) {
+                        setData((prev) => ({
+                            ...prev,
+                            name: "",
+                            category_id: null,
+                            tags: [],
+                        }));
+                        setTags([]);
+                        setSkuExist(false);
+                        setDataExist(false);
+                    }
+                })
+                .finally(() => {
+                    setIsFetching(false);
+                });
         }, 500);
     
         return () => {
             clearTimeout(timeoutId);
         };
-    }, [data.sku, categoriesWithTags]);
+    }, [data.sku]);
 
     useEffect(() => {
         if (data.category_id) {
@@ -311,10 +268,15 @@ export default function ProductMergeDashboard({
     }, [data.category_id]);
 
     useEffect(() => {
-        if (!data.sku || !data.category_id || data.tags.length === 0) {
+        if (data.tags.length === 0) {
+            setDataExist(false);
+            setData((prev) => ({
+                ...prev,
+                price: 0,
+            }));
             return;
         }
-
+    
         const timeoutId = setTimeout(() => {
             axios
                 .get(route("api.stock.check.product.exist"), {
@@ -342,7 +304,7 @@ export default function ProductMergeDashboard({
         return () => {
             clearTimeout(timeoutId);
         };
-    }, [data.sku, data.category_id, data.tags]);
+    }, [data.tags]);
 
     useEffect(() => {
         if (countList > mergeList.length) {
@@ -428,12 +390,12 @@ export default function ProductMergeDashboard({
                             type="text"
                             id="name"
                             placeholder="Product Name"
-                            disabled={dataExistName}
+                            disabled={skuExist || isFetching}
                             onChange={(
                                 event: React.ChangeEvent<HTMLInputElement>
                             ) => setData("name", event.target.value)}
                             className={`${
-                                dataExistName && "font-semibold bg-gray-300"
+                                (skuExist || isFetching) && "font-semibold bg-gray-300"
                             }`}
                             value={data.name}
                         />
@@ -445,17 +407,30 @@ export default function ProductMergeDashboard({
 
                     <div className="grid w-full lg:max-w-lg items-center gap-2">
                         <Label htmlFor="category">Kategori</Label>
-                        <Select
-                            onValueChange={changeCategoryId}
-                            value={data.category_id?.toString()}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Pilih kategori stok" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {allCategory.map(
-                                        (category: CategoryWithTagsType) => (
+
+                        {skuExist || isFetching ? (
+                            <Input
+                                type="text"
+                                id="name"
+                                placeholder="Pilih kategori produksi"
+                                className="bg-gray-300 font-semibold"
+                                value={
+                                    categoriesWithTags.find((cat: any) => cat.id === data.category_id)?.name || ""
+                                }
+                                disabled
+                            />
+                        ) : (
+                            <Select
+                                onValueChange={changeCategoryId}
+                                name="category"
+                                value={data.category_id ? data.category_id.toString() : undefined}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Pilih kategori produksi" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {categoriesWithTags.map((category: any) => (
                                             <SelectItem
                                                 key={category.id}
                                                 value={category.id.toString()}
@@ -463,104 +438,58 @@ export default function ProductMergeDashboard({
                                             >
                                                 {category.name}
                                             </SelectItem>
-                                        )
-                                    )}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        )}
                         {allCategory.length === 0 && !isTyping && (
                         <InputError
                             message="Kategori Stok tidak ditemukan, silahkan tambah kategori yang sesuai terlebih dahulu"
                             className="mt-2"
                         />
                         )} 
-                        <InputError
-                            message={errors.category_id}
-                            className="mt-2"
-                        />
+                        <InputError message={errors.category_id} className="mt-2" />
                     </div>
 
-                    {(tags.length > 0 || skuTags.length > 0) && (
-                                            <div className="grid w-full max-w-sm items-center gap-2">
-                                                <Label htmlFor="tag" className="mb-1">
-                                                    Tags
-                                                </Label>
-                                                <div className="text-sm font-medium flex flex-col gap-2">
-                                                    {skuTags.length > 0
-                                                        ? skuTags.map((tag: any) => (
-                                                              <div
-                                                                  key={tag.tag_id}
-                                                                  className="flex items-center gap-2"
-                                                              >
-                                                                  <Checkbox
-                                                                      id={tag.tag_name}
-                                                                      name="tags"
-                                                                      value={tag.tag_name}
-                                                                      className="cursor-pointer"
-                                                                      onCheckedChange={(checked) =>
-                                                                          changeTagSelected(
-                                                                              checked,
-                                                                              tag.tag_id
-                                                                          )
-                                                                      }
-                                                                  />
-                                                                  <Label
-                                                                      htmlFor={tag.tag_name}
-                                                                      className="cursor-pointer"
-                                                                  >
-                                                                      {tag.tag_name}
-                                                                  </Label>
-                                                              </div>
-                                                          ))
-                                                        : tags.map(
-                                                              (tag: {
-                                                                  id: number;
-                                                                  name: string;
-                                                              }) => (
-                                                                  <div
-                                                                      key={tag.id}
-                                                                      className="flex items-center gap-2"
-                                                                  >
-                                                                      <Checkbox
-                                                                          id={tag.name}
-                                                                          name="tags"
-                                                                          value={tag.name}
-                                                                          className="cursor-pointer"
-                                                                          onCheckedChange={(
-                                                                              checked
-                                                                          ) =>
-                                                                              changeTagSelected(
-                                                                                  checked,
-                                                                                  tag.id
-                                                                              )
-                                                                          }
-                                                                      />
-                                                                      <Label
-                                                                          htmlFor={tag.name}
-                                                                          className="cursor-pointer"
-                                                                      >
-                                                                          {tag.name}
-                                                                      </Label>
-                                                                  </div>
-                                                              )
-                                                          )}
-                                                </div>
-                                                <InputError
-                                                    message={errors.tags}
-                                                    className="mt-2"
-                                                />
-                                            </div>
-                                        )}
+                    {tags.length > 0 && (
+                        <div className="grid w-full max-w-sm items-center gap-2">
+                            <Label htmlFor="tag" className="mb-1">
+                                Tags
+                            </Label>
+                            <div className="text-sm font-medium flex flex-col gap-2">
+                                {tags.map((tag: { id: number; name: string }) => (
+                                    <div key={tag.id} className="flex items-center gap-2">
+                                        <Checkbox
+                                            id={tag.name}
+                                            name="tags"
+                                            value={tag.name}
+                                            className="cursor-pointer"
+                                            checked={data.tags.includes(tag.id)}
+                                            onCheckedChange={(checked) =>
+                                                changeTagSelected(checked, tag.id)
+                                            }
+                                        />
+                                        <Label
+                                            htmlFor={tag.name}
+                                            className="cursor-pointer"
+                                        >
+                                            {tag.name}
+                                        </Label>
+                                    </div>
+                                ))}
+                            </div>
+                            <InputError
+                                message={errors.tags}
+                                className="mt-2"
+                            />
+                        </div>
+                    )}
 
                     <div className="grid w-full lg:max-w-lg items-center gap-2">
                         <Label htmlFor="category">
                             List Produk yang Ingin Digabung
                         </Label>
-                        {mergeList.length > 2 && errorMergeList && (
-                            <p className="text-xs text-red-600">
-                                * {errorMergeList}
-                            </p>
-                        )}
                         <div className="flex gap-1">
                             <Button
                                 disabled={countList > 1 && mergeListError}
@@ -632,44 +561,28 @@ export default function ProductMergeDashboard({
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectGroup>
-                                                    {productInProduction.map(
-                                                        (product: any) => {
-                                                            const selected =
-                                                                mergeList.filter(
-                                                                    (list) => {
-                                                                        return (
-                                                                            list.master_id ===
-                                                                            product.master_id
-                                                                        );
-                                                                    }
-                                                                );
-                                                            const allTag: string =
-                                                                product.tags
-                                                                    ?.map(
-                                                                        (tag: {
-                                                                            id: number;
-                                                                            name: string;
-                                                                        }) =>
-                                                                            tag.name
-                                                                    )
-                                                                    .join(", ");
-                                                            return (
-                                                                <SelectItem
-                                                                    key={
-                                                                        product.production_id
-                                                                    }
-                                                                    value={`${index} - ${product.master_id} - ${product.production_id}`}
-                                                                    className="capitalize cursor-pointer"
-                                                                    disabled={
-                                                                        selected.length >
-                                                                        0
-                                                                    }
-                                                                >
-                                                                    {`${product.sku} - ${product.product_name} - ${product.category_name} - ${allTag}`}
-                                                                </SelectItem>
-                                                            );
-                                                        }
-                                                    )}
+                                                {productInProduction.map((product: any) => {
+                                                    const isAlreadySelected = mergeList.some(
+                                                        (item, idx) =>
+                                                            idx !== index &&
+                                                            item.production_id === product.production_id
+                                                    );
+
+                                                    const allTag: string = product.tags
+                                                        ?.map((tag: { id: number; name: string }) => tag.name)
+                                                        .join(", ");
+
+                                                    return (
+                                                        <SelectItem
+                                                            key={product.production_id}
+                                                            value={`${index} - ${product.master_id} - ${product.production_id}`}
+                                                            className="capitalize cursor-pointer"
+                                                            disabled={isAlreadySelected || product.production_id === productSelect.production_id}
+                                                        >
+                                                            {`${product.sku} - ${product.product_name} - ${product.category_name} - ${allTag}`}
+                                                        </SelectItem>
+                                                    );
+                                                })}
                                                 </SelectGroup>
                                             </SelectContent>
                                         </Select>

@@ -19,8 +19,6 @@ import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuTrigger,
 } from "@/Components/ui/DropdownMenu";
 import { Input } from "@/Components/ui/Input";
@@ -33,7 +31,6 @@ import {
     TableRow,
 } from "@/Components/ui/Table";
 import { Link } from "@inertiajs/react";
-import { FilterFn } from "@tanstack/react-table";
 import {
     Select,
     SelectContent,
@@ -160,9 +157,9 @@ export const columns: ColumnDef<User>[] = [
                     badgeColor = "bg-green-600 hover:bg-blue-700";
                     badgeName = "Stok";
                     break;
-                case "delivery":
+                case "sales":
                     badgeColor = "bg-red-600 hover:bg-green-700";
-                    badgeName = "Pengiriman";
+                    badgeName = "Penjualan";
                     break;
                 default:
                     badgeColor = "bg-gray-600 hover:bg-gray-700";

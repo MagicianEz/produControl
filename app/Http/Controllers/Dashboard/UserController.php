@@ -82,7 +82,7 @@ class UserController extends Controller
     public function store(AddUserRequest $request)
     {
         $requestData = $request->validated();
-        $USER = DB::table('users')->where('username', '=', $requestData['username'])->first();
+        $USER = DB::table('user')->where('username', '=', $requestData['username'])->first();
         if ($USER) {
             return Redirect::route('user.create.show')->with('error', 'Username sudah terdaftar.');
         }
@@ -100,18 +100,15 @@ class UserController extends Controller
     {
         $requestData = $request->validated();
 
-        // Find the user by username
         $user = User::where('username', $requestData['username'])->first();
 
         if (!$user) {
             return Redirect::route('user.create.show')->with('error', 'User tidak ada.');
         }
 
-        // Update the user's name and role
         $user->name = $requestData['name'];
         $user->role = $requestData['role'];
 
-        // Check if a new password is provided and update it
         if (!empty($requestData['password'])) {
             $user->password = Hash::make($requestData['password']);
         }

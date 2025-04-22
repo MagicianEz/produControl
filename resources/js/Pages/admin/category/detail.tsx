@@ -8,7 +8,6 @@ import { Button } from "@/Components/ui/Button";
 import { useEffect, useState } from "react";
 import InputError from "@/Components/InputError";
 import { Checkbox } from "@/Components/ui/Checkbox";
-import { Pencil, Subtitles } from "lucide-react";
 
 interface Tag {
     id: number;
@@ -18,8 +17,8 @@ interface Tag {
 interface Category {
     category_id: number;
     category_name: string;
-    category_type: string;
-    tags: Tag[];
+    production_tags: Tag[];
+    stock_tags: Tag[];
 }
 
 export default function CategoryDetailDashboard({
@@ -40,60 +39,84 @@ export default function CategoryDetailDashboard({
     const subTitle: string = appTitleArray.join(" ");
     const titleRev: string = subTitle + " " + title;
 
-    const [isTambah, setIsTambah] = useState<boolean>(false);
-    const [listTag, setListTag] = useState<string[]>([]);
-    const [categoryTags, setCategoryTags] = useState(category.tags);
+    const [isTambahProduksi, setIsTambahProduksi] = useState<boolean>(false);
+    const [isTambahStok, setIsTambahStok] = useState<boolean>(false);
+    const [listTagProduksi, setListTagProduksi] = useState<string[]>([]);
+    const [listTagStok, setListTagStok] = useState<string[]>([]);
+    const [categoryProductionTags, setCategoryProductionTags] = useState(category.production_tags);
+    const [categoryStockTags, setCategoryStockTags] = useState(category.stock_tags);
+
 
     const { data, setData, reset, errors, processing, patch } = useForm<any>({
         category_id: category.category_id,
         category_name: category.category_name,
-        tags_checked: category.tags.map((tag: Tag) => ({
+        production_tags_checked: category.production_tags.map((tag: Tag) => ({
             id: tag.id,
             name: tag.name,
         })),
+        stock_tags_checked: category.stock_tags.map((tag: Tag) => ({
+            id: tag.id,
+            name: tag.name,
+        })),
+        new_production_tags: [],
+        new_stock_tags: [],
         tags_delete: [],
-        new_tags: [],
     });
 
     const submit = (e: any) => {
         e.preventDefault();
         patch(route("category.update"), {
-            onSuccess: () =>
-                reset(
-                    "category_id",
-                    "category_name",
-                    "tags_checked",
-                    "tags_delete",
-                    "new_tags"
-                ),
+            onSuccess: () => reset(),
         });
     };
 
     useEffect(() => {
-        const tagsDelete = categoryTags.filter(
-            (item: Tag) =>
-                !data.tags_checked.some(
-                    (selectedItem: Tag) => selectedItem.id === item.id
-                )
+        const productionTagsDelete = categoryProductionTags.filter(
+            (item: Tag) => !data.production_tags_checked.some((selectedItem: Tag) => selectedItem.id === item.id)
         );
-        setData("tags_delete", tagsDelete);
-    }, [data.tags_checked]);
+    
+        const stockTagsDelete = categoryStockTags.filter(
+            (item: Tag) => !data.stock_tags_checked.some((selectedItem: Tag) => selectedItem.id === item.id)
+        );
+    
+        setData("tags_delete", [...productionTagsDelete, ...stockTagsDelete]);
+    }, [data.production_tags_checked, data.stock_tags_checked]);    
 
     useEffect(() => {
-        setData("new_tags", listTag);
-    }, [listTag]);
+        setData("new_production_tags", listTagProduksi);
+    }, [listTagProduksi]);
+
+    useEffect(() => {
+        setData("new_stock_tags", listTagStok);
+    }, [listTagStok]);
+
+    useEffect(() => {
+        if (!isTambahProduksi) {
+            setData("new_production_tags", []);
+            setListTagProduksi([]);
+        }
+    }, [isTambahProduksi]);
+    
+    useEffect(() => {
+        if (!isTambahStok) {
+            setData("new_stock_tags", []);
+            setListTagStok([]);
+        }
+    }, [isTambahStok]);
 
     const changeTagSelected = (
         checked: boolean,
         tagId: number,
-        tagName: string
+        tagName: string,
+        type: "production_tags_checked" | "stock_tags_checked"
     ) => {
         const tag = { id: tagId, name: tagName };
         const updatedTagsChecked = checked
-            ? [...data.tags_checked, tag]
-            : data.tags_checked.filter((t: Tag) => t.id !== tagId);
-        setData("tags_checked", updatedTagsChecked);
+            ? [...data[type], tag]
+            : data[type].filter((t: Tag) => t.id !== tagId);
+        setData(type, updatedTagsChecked);
     };
+    
 
     return (
         <AdminLayout
@@ -132,158 +155,164 @@ export default function CategoryDetailDashboard({
                     </div>
 
                     <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
-                        <Label htmlFor="sku">Tipe Kategori</Label>
-                        <Input
-                            type="text"
-                            id="sku"
-                            placeholder="Nama Kategori"
-                            value={category.category_type}
-                            className="bg-gray-200 text-black font-semibold capitalize"
-                            disabled
-                        />
-                        <InputError
-                            message={errors.category_type}
-                            className="mt-2"
-                        />
-                    </div>
-
-                    <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
-                        <Label htmlFor="tags">Tags</Label>
-                        <p className="text-xs text-red-600">
-                            * Hilangkan ceklis pada tag yang ingin dihapus.
-                        </p>
-                        {categoryTags.map((tag: Tag) => {
-                            const isChecked = data.tags_checked.some(
-                                (t: Tag) => t.id === tag.id
-                            );
+                        <Label htmlFor="tags">Tags Produksi</Label>
+                        {categoryProductionTags.map((tag: Tag) => {
+                            const isChecked = data.production_tags_checked.some((t: Tag) => t.id === tag.id);
                             return (
-                                <div
-                                    key={tag.id}
-                                    className="flex items-center gap-2"
-                                >
-                                    <div className="w-2/3 flex items-center gap-2">
-                                        <Checkbox
-                                            id={tag.name}
-                                            name="tags"
-                                            value={tag.name}
-                                            className="cursor-pointer"
-                                            checked={isChecked}
-                                            onCheckedChange={(checked) =>
-                                                changeTagSelected(
-                                                    checked as boolean,
-                                                    tag.id,
-                                                    tag.name
-                                                )
-                                            }
-                                        />
-                                        <Input
-                                            type="text"
-                                            className={`h-8 p-2 w-full ${
-                                                !isChecked
-                                                    ? "bg-red-300 text-red-800 font-semibold"
-                                                    : ""
-                                            }`}
-                                            placeholder={tag.name}
-                                            disabled={!isChecked}
-                                            value={
-                                                data.tags_checked.find(
-                                                    (t: Tag) => t.id === tag.id
-                                                )?.name || ""
-                                            }
-                                            onChange={(e) => {
-                                                const updatedName =
-                                                    e.target.value;
-                                                const updatedTags =
-                                                    data.tags_checked.map(
-                                                        (t: Tag) =>
-                                                            t.id === tag.id
-                                                                ? {
-                                                                      ...t,
-                                                                      name: updatedName,
-                                                                  }
-                                                                : t
-                                                    );
-                                                setData(
-                                                    "tags_checked",
-                                                    updatedTags
-                                                );
-                                            }}
-                                        />
-                                    </div>
+                                <div key={`production-${tag.id}`} className="flex items-center gap-2">
+                                    <Checkbox
+                                        id={`production-${tag.name}`}
+                                        name="production_tags"
+                                        value={tag.name}
+                                        className="cursor-pointer"
+                                        checked={isChecked}
+                                        onCheckedChange={(checked) =>
+                                            changeTagSelected(
+                                                checked as boolean,
+                                                tag.id,
+                                                tag.name,
+                                                "production_tags_checked"
+                                            )
+                                        }
+                                    />
+                                    <Label htmlFor={`production-${tag.name}`} className="cursor-pointer">
+                                        {tag.name}
+                                    </Label>
                                 </div>
                             );
                         })}
-                        <InputError
-                            message={errors.tags_checked}
-                            className="mt-2"
-                        />
-                    </div>
-
-                    <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
-                        <p className="text-xs mt-2 text-red-600">
-                            <span className="font-semibold">Catatan:</span>{" "}
-                            Hati-hati saat mengubah nama kategori dan juga tag
-                            kategori, karena semua product yang memiliki
-                            kategori tersebut akan berubah. Harap diperhatikan
-                            kembali dan teliti.
-                        </p>
+                        <InputError message={errors.production_tags_checked} className="mt-2" />
                     </div>
 
                     <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
                         <Button
                             onClick={(e) => {
                                 e.preventDefault();
-                                isTambah && setData("new_tags", []);
-                                setIsTambah((prev) => !prev);
+                                setIsTambahProduksi((prev) => !prev);
                             }}
                             className="text-xs mt-2 h-auto max-w-max"
                         >
-                            {isTambah ? "Hapus Tag Baru" : "Tambah Tag"}
+                            {isTambahProduksi ? "Batalkan Tambah Tag Produksi" : "Tambah Tag Produksi"}
                         </Button>
                     </div>
 
-                    {isTambah && (
-                        <>
-                            <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
-                                <Label htmlFor="tags">Tags</Label>
-                                <Input
-                                    type="text"
-                                    id="tags"
-                                    placeholder="Masukkan beberapa tag dan pisahkan dengan koma (,)"
-                                    onChange={(e) => {
-                                        const tags = e.target.value
-                                            .split(",")
-                                            .map((tag) => tag.trim())
-                                            .filter((tag) => tag !== "");
-                                        setListTag(tags);
-                                        setData("new_tags", tags.join(", "));
-                                    }}
-                                />
-                                <InputError
-                                    message={errors.new_tags}
-                                    className="mt-2"
-                                />
-                            </div>
-
-                            {listTag?.length > 0 && (
-                                <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
-                                    <Label htmlFor="tags">List tag</Label>
-                                    <ul className="list-disc pl-5">
-                                        {listTag.map(
-                                            (tag: string, index: number) => (
-                                                <li
-                                                    key={index}
-                                                    className="text-sm"
-                                                >
-                                                    {tag}
-                                                </li>
-                                            )
-                                        )}
-                                    </ul>
-                                </div>
-                            )}
-                        </>
+                    {isTambahProduksi && (
+                        <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
+                            <Label htmlFor="tags_produksi">Tags Produksi</Label>
+                            <Input
+                                type="text"
+                                id="tags_produksi"
+                                placeholder="Masukkan tag produksi, pisahkan dengan koma"
+                                onChange={(e) => {
+                                    const tags = e.target.value
+                                        .split(",")
+                                        .map((tag) => tag.trim())
+                                        .filter((tag) => tag !== "");
+                                    setListTagProduksi(tags);
+                                    setData("new_production_tags", tags);
+                                }}
+                            />
+                            <InputError message={errors.new_production_tags} className="mt-2" />
+                        </div>
                     )}
+
+                    <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
+                        <Label htmlFor="tags">Tags Stok</Label>
+                        {categoryStockTags.map((tag: Tag) => {
+                            const isChecked = data.stock_tags_checked.some((t: Tag) => t.id === tag.id);
+                            return (
+                                <div key={`stock-${tag.id}`} className="flex items-center gap-2">
+                                    <Checkbox
+                                        id={`stock-${tag.name}`}
+                                        name="stock_tags"
+                                        value={tag.name}
+                                        className="cursor-pointer"
+                                        checked={isChecked}
+                                        onCheckedChange={(checked) =>
+                                            changeTagSelected(
+                                                checked as boolean,
+                                                tag.id,
+                                                tag.name,
+                                                "stock_tags_checked"
+                                            )
+                                        }
+                                    />
+                                    <Label htmlFor={`stock-${tag.name}`} className="cursor-pointer">
+                                        {tag.name}
+                                    </Label>
+                                </div>
+                            );
+                        })}
+                        <InputError message={errors.stock_tags_checked} className="mt-2" />
+                    </div>
+
+                    <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
+                        <Button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setIsTambahStok((prev) => !prev);
+                            }}
+                            className="text-xs mt-2 h-auto max-w-max"
+                        >
+                            {isTambahStok ? "Batalkan Tambah Tag Stok" : "Tambah Tag Stok"}
+                        </Button>
+                    </div>
+
+                    {isTambahStok && (
+                        <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
+                            <Label htmlFor="tags_stok">Tags Stok</Label>
+                            <Input
+                                type="text"
+                                id="tags_stok"
+                                placeholder="Masukkan tag stok, pisahkan dengan koma"
+                                onChange={(e) => {
+                                    const tags = e.target.value
+                                        .split(",")
+                                        .map((tag) => tag.trim())
+                                        .filter((tag) => tag !== "");
+                                    setListTagStok(tags);
+                                    setData("new_stock_tags", tags);
+                                }}
+                            />
+                            <InputError message={errors.new_stock_tags} className="mt-2" />
+                        </div>
+                    )}
+
+                    {listTagProduksi?.length > 0 && (
+                        <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
+                            <Label htmlFor="tags">List Tag Produksi</Label>
+                            <ul className="list-disc pl-5">
+                                {listTagProduksi.map((tag: string, index: number) => (
+                                    <li key={`production-${index}`} className="text-sm">
+                                        {tag}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    {listTagStok?.length > 0 && (
+                        <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
+                            <Label htmlFor="tags">List Tag Stok</Label>
+                            <ul className="list-disc pl-5">
+                                {listTagStok.map((tag: string, index: number) => (
+                                    <li key={`stock-${index}`} className="text-sm">
+                                        {tag}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
+                        <p className="text-xs mt-2 text-red-600">
+                            <span className="font-semibold">Catatan:</span>{" "}
+                            Hati-hati saat mengubah nama kategori dan tags
+                            kategori, karena semua produk yang memiliki
+                            kategori tersebut akan berubah. Harap diperhatikan
+                            kembali dengan teliti.
+                        </p>
+                    </div>
 
                     <Button
                         type="submit"

@@ -49,6 +49,8 @@ export default function AddProductDashboard({
         ),
     });
 
+    console.log("Test: ", categoryStock);
+
     const submit = (e: any) => {
         e.preventDefault();
         if (!isChecked) {

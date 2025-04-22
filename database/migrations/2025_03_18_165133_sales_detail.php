@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public $tableName = 'tag';
+    public $tableName = 'sales_detail';
 
     /**
      * Run the migrations.
@@ -15,11 +15,13 @@ return new class extends Migration
     {
         Schema::create($this->tableName, function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('category_id');
-            $table->string('name', 20);
-            $table->enum('type', ['production', 'stock']);
+            $table->unsignedBigInteger('stock_id');
+            $table->unsignedBigInteger('sales_id');
+            $table->integer('quantity');
+            $table->bigInteger('price');
             $table->timestamps();
-            $table->foreign('category_id')->references('id')->on('category')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign(columns: 'stock_id')->references('id')->on('stock')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('sales_id')->references('id')->on('sales')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

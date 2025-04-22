@@ -13,18 +13,12 @@ class SelectedProductionCategory extends Model
 
     protected $fillable = [
         'production_id',
-        'category_id',
-        'tag_id',
+        'tag_id'
     ];
 
     public function production()
     {
         return $this->belongsTo(Production::class);
-    }
-
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
     }
 
     public function tag()

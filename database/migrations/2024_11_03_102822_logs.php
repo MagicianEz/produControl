@@ -16,13 +16,13 @@ return new class extends Migration
     {
         Schema::create($this->tableName, function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->unsignedBigInteger(column: 'user_id');
             $table->enum('action', ['tambah', 'edit', 'hapus', 'move', 'merge', 'retur']);
-            $table->enum('category', ['production', 'stock', 'delivery']);
+            $table->enum('category', ['production', 'stock', 'sales']);
             $table->string('sku');
             $table->text('keterangan')->nullable();
             $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('user')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

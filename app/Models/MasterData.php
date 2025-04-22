@@ -12,13 +12,14 @@ class MasterData extends Model
     protected $table = 'master_data';
 
     protected $fillable = [
+        'category_id',
         'product_name',
         'sku',
     ];
 
-    public function deliveries()
+    public function category()
     {
-        return $this->hasMany(Delivery::class);
+        return $this->belongsTo(Category::class);
     }
 
     public function productions()
@@ -28,6 +29,12 @@ class MasterData extends Model
 
     public function stocks()
     {
-        return $this->hasMany(Stock::class);
+        return $this->hasMany(Stock::class, 'master_id', 'id');
+    }
+
+
+    public function salesDetails()
+    {
+        return $this->hasMany(SalesDetail::class, 'sales_id');
     }
 }

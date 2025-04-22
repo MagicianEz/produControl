@@ -13,18 +13,12 @@ class SelectedStockCategory extends Model
 
     protected $fillable = [
         'stock_id',
-        'category_id',
-        'tag_id',
+        'tag_id'
     ];
 
     public function stock()
     {
         return $this->belongsTo(Stock::class);
-    }
-
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
     }
 
     public function tag()

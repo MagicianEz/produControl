@@ -15,13 +15,11 @@ return new class extends Migration
     {
         Schema::create($this->tableName, function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('stock_id');
-            $table->unsignedBigInteger('category_id');
-            $table->unsignedBigInteger('tag_id')->nullable();
-            $table->foreign('stock_id')->references('id')->on('stock')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('category_id')->references('id')->on('category')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('tag_id')->references('id')->on('tag')->onUpdate('cascade')->onDelete('cascade');
+            $table->unsignedBigInteger(column: 'stock_id');
+            $table->unsignedBigInteger(column: 'tag_id');
             $table->timestamps();
+            $table->foreign('stock_id')->references('id')->on('stock')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('tag_id')->references('id')->on('tag')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

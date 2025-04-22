@@ -12,8 +12,9 @@ class Tag extends Model
     protected $table = 'tag';
 
     protected $fillable = [
-        'name',
         'category_id',
+        'name',
+        'type'
     ];
 
     public function category()

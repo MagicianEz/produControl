@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public $tableName = 'delivery';
+    public $tableName = 'sales';
 
     /**
      * Run the migrations.
@@ -16,11 +16,12 @@ return new class extends Migration
         Schema::create($this->tableName, function (Blueprint $table) {
             $table->id();
             $table->string('invoice', 100);
-            $table->integer('quantity');
-            $table->bigInteger('total_price');
-            $table->unsignedBigInteger('master_id');
-            $table->foreign('master_id')->references('id')->on('master_data')->onUpdate('cascade')->onDelete('cascade');
-            $table->enum('status_pengiriman', ['on hold', 'on progress', 'on delivery', 'delivered'])->default('on progress');
+            $table->string('customer_name', 50);
+            $table->bigInteger('sub_total');
+            $table->bigInteger('vat');
+            $table->bigInteger('discount');
+            $table->bigInteger('grand_total');
+            $table->enum('delivery_status', ['In Progress', 'On Hold', 'In Delivery', 'Delivered'])->default('In Progress'); // Tambahan ENUM
             $table->timestamps();
         });
     }

@@ -24,16 +24,18 @@ export default function AddProductCategoryDashboard({
     const subTitle: string = appTitleArray.join(" ");
     const titleRev: string = subTitle + " " + title;
 
-    const [listTag, setListTag] = useState<string[]>([]);
-    
+    const [listTagsProduction, setListTagsProduction] = useState<string[]>([]);
+    const [listTagsStock, setListTagsStock] = useState<string[]>([]);
+
     const { data, setData, reset, errors, processing, post } = useForm({
         name: "",
-        tags: "",
+        tagsProduction: "",
+        tagsStock: "",
     });
 
     const submit = (e: any) => {
         e.preventDefault();
-        post(route("production.add.category.store"), {
+        post(route("category.add.store"), {
             onSuccess: () => reset(),
         });
     };
@@ -45,11 +47,11 @@ export default function AddProductCategoryDashboard({
             name={nameUser}
             role={roleUser}
             breadcumb1={"Aplikasi"}
-            breadcumb2={"Produksi"}
+            breadcumb2={"Kategori"}
             breadcumb3={subTitle}
-            breadcumb2Href={route("production.show")}
+            breadcumb2Href={route("category.show")}
         >
-            <Head title={"Tambah Kategori - Produksi"} />
+            <Head title={"Tambah Kategori"} />
             <div className="p-4 pb-0">
                 <h1 className="font-semibold uppercase">Tambah Kategori</h1>
             </div>
@@ -67,40 +69,57 @@ export default function AddProductCategoryDashboard({
                     </div>
 
                     <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="name">Tipe Kategori</Label>
-                        <Input
-                            type="text"
-                            id="name"
-                            value="Production"
-                            className="bg-gray-200 text-black font-semibold"
-                            disabled
-                        />
-                    </div>
-
-                    <div className="grid w-full max-w-sm items-center gap-2">
-                        <Label htmlFor="tags">Tags</Label>
+                        <Label htmlFor="tags">Tags Produksi</Label>
                         <Input
                             type="text"
                             id="tags"
                             placeholder="Masukkan beberapa tag dan pisahkan dengan koma (,)"
                             onChange={(e) => {
-                                const tags = e.target.value
+                                const tagsProduction = e.target.value
                                     .split(",")
                                     .map((tag) => tag.trim())
                                     .filter((tag) => tag !== "");
-                                setListTag(tags);
-                                setData("tags", tags.join(", "));
+                                setListTagsProduction(tagsProduction);
+                                setData("tagsProduction", tagsProduction.join(", "));
                             }}
                         />
-
-                        <InputError message={errors.tags} className="mt-2" />
+                        <InputError message={errors.tagsProduction} className="mt-2" />
                     </div>
 
-                    {listTag?.length > 0 && (
+                    <div className="grid w-full max-w-sm items-center gap-2">
+                        <Label htmlFor="tags">Tags Stok</Label>
+                        <Input
+                            type="text"
+                            id="tags"
+                            placeholder="Masukkan beberapa tag dan pisahkan dengan koma (,)"
+                            onChange={(e) => {
+                                const tagsStock = e.target.value
+                                    .split(",")
+                                    .map((tag) => tag.trim())
+                                    .filter((tag) => tag !== "");
+                                setListTagsStock(tagsStock);
+                                setData("tagsStock", tagsStock.join(", "));
+                            }}
+                        />
+                        <InputError message={errors.tagsStock} className="mt-2" />
+                    </div>
+
+                    {listTagsProduction?.length > 0 && (
                         <div className="grid w-full max-w-sm items-center gap-2">
-                            <Label htmlFor="tags">List tag</Label>
+                            <Label htmlFor="tags">List Tag Produksi</Label>
                             <ul className="list-disc pl-5">
-                                {listTag.map((tag: string, index: number) => (
+                                {listTagsProduction.map((tag: string, index: number) => (
+                                    <li key={index}>{tag}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    {listTagsStock?.length > 0 && (
+                        <div className="grid w-full max-w-sm items-center gap-2">
+                            <Label htmlFor="tags">List Tag Stok</Label>
+                            <ul className="list-disc pl-5">
+                                {listTagsStock  .map((tag: string, index: number) => (
                                     <li key={index}>{tag}</li>
                                 ))}
                             </ul>
@@ -110,9 +129,7 @@ export default function AddProductCategoryDashboard({
                     <Button
                         type="submit"
                         disabled={processing}
-                        className={`inline-flex items-center rounded-md border border-transparent bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gray-700 focus:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-gray-900 ${
-                            processing && "opacity-25"
-                        } `}
+                        className={`inline-flex items-center rounded-md border border-transparent bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gray-700 focus:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-gray-900`}
                     >
                         TAMBAH
                     </Button>

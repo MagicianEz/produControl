@@ -12,8 +12,7 @@ class Category extends Model
     protected $table = 'category';
 
     protected $fillable = [
-        'name',
-        'type',
+        'name'
     ];
 
 
@@ -22,13 +21,8 @@ class Category extends Model
         return $this->hasMany(Tag::class);
     }
 
-    public function selectedStockCategories()
+    public function masterData()
     {
-        return $this->hasMany(SelectedStockCategory::class);
-    }
-
-    public function selectedProductionCategories()
-    {
-        return $this->hasMany(SelectedProductionCategory::class);
+        return $this->hasOne(MasterData::class);
     }
 }

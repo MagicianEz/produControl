@@ -15,11 +15,9 @@ return new class extends Migration
     {
         Schema::create($this->tableName, function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('production_id');
-            $table->unsignedBigInteger('category_id');
-            $table->unsignedBigInteger('tag_id')->nullable();
+            $table->unsignedBigInteger(column: 'production_id');
+            $table->unsignedBigInteger(column: 'tag_id');
             $table->foreign('production_id')->references('id')->on('production')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('category_id')->references('id')->on('category')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('tag_id')->references('id')->on('tag')->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });

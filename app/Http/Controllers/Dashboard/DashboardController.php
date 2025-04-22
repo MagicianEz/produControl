@@ -8,7 +8,7 @@ use App\Models\MasterData;
 use App\Models\User;
 use App\Models\Production;
 use App\Models\Stock;
-use App\Models\Delivery;
+use App\Models\Sales;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,25 +21,22 @@ class DashboardController extends Controller
     {
 
         $USERS = User::count();
-        $CATEGORY_PRODUCTION = Category::where('type', '=', 'production')->count();
-        $CATEGORY_STOCK = Category::where('type', '=', 'stock')->count();
+        $CATEGORY = Category::count();
+        $TAGS_PRODUCTION = Tag::where('type', '=', 'production')->count();
+        $TAGS_STOCK = Tag::where('type', '=', 'stock')->count();
         $MASTER_DATA = MasterData::count();
         $PRODUCTION = Production::count();
         $STOCK = Stock::count();
-        $DELIVERY = Delivery::count();
-        $DELIVERY_PROGRESS = Delivery::where('status_pengiriman', 'on progress')->count();
-        $DELIVERY_HOLD = Delivery::where('status_pengiriman', 'on hold')->count();
-        $DELIVERY_DELIVERY = Delivery::where('status_pengiriman', 'on delivery')->count();
-        $DELIVERY_DELIVERED = Delivery::where('status_pengiriman', 'delivered')->count();
-        $PRODUCT_PROGRESS = Delivery::where('status_pengiriman', 'on progress')->sum('quantity');
-        $PRODUCT_HOLD = Delivery::where('status_pengiriman', 'on hold')->sum('quantity');
-        $PRODUCT_DELIVERY = Delivery::where('status_pengiriman', 'on delivery')->sum('quantity');
-        $PRODUCT_DELIVERED = Delivery::where('status_pengiriman', 'delivered')->sum('quantity');
+        $DELIVERY = Sales::count();
+        $DELIVERY_PROGRESS = Sales::where('delivery_status', 'in progress')->count();
+        $DELIVERY_HOLD = Sales::where('delivery_status', 'on hold')->count();
+        $DELIVERY_DELIVERY = Sales::where('delivery_status', 'in delivery')->count();
+        $DELIVERY_DELIVERED = Sales::where('delivery_status', 'delivered')->count();
         $LOGGING = DB::table('logs')
-            ->join('users', 'logs.user_id', '=', 'users.id')
+            ->join('user', 'logs.user_id', '=', 'user.id')
             ->select([
-                'users.id as user_id',
-                'users.name as user_name',
+                'user.id as user_id',
+                'user.name as user_name',
                 'logs.action as log_action',
                 'logs.category as log_category',
                 'logs.sku as log_sku',
@@ -55,9 +52,9 @@ class DashboardController extends Controller
             'roleUser' => $request->user()->role,
             'total' => [
                 'users' => $USERS - 1,
-                'keseluruhan' => $PRODUCTION + $STOCK + $DELIVERY,
-                'categoryProduction' => $CATEGORY_PRODUCTION,
-                'categoryStock' => $CATEGORY_STOCK,
+                'category' => $CATEGORY,
+                'tagsProduction' => $TAGS_PRODUCTION,
+                'tagsStock' => $TAGS_STOCK,
                 'master_data' => $MASTER_DATA,
                 'production' => $PRODUCTION,
                 'stock' => $STOCK,
@@ -66,10 +63,6 @@ class DashboardController extends Controller
                 'delivery_hold' => $DELIVERY_HOLD,
                 'delivery_delivery' => $DELIVERY_DELIVERY,
                 'delivery_delivered' => $DELIVERY_DELIVERED,
-                'product_progress' => $PRODUCT_PROGRESS,
-                'product_hold' => $PRODUCT_HOLD,
-                'product_delivery' => $PRODUCT_DELIVERY,
-                'product_delivered' => $PRODUCT_DELIVERED,
             ],
             'loggingData' => $LOGGING,
         ]);

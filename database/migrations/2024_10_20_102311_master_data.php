@@ -16,9 +16,11 @@ return new class extends Migration
     {
         Schema::create($this->tableName, function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('category_id');
             $table->string('product_name', 50);
             $table->string('sku', 20)->unique();
             $table->timestamps();
+            $table->foreign('category_id')->references('id')->on('category')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

@@ -33,11 +33,6 @@ import {
     TableRow,
 } from "@/Components/ui/Table";
 import { Badge } from "@/Components/ui/Badge";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/Components/ui/Popover";
 import { Link } from "@inertiajs/react";
 import { FilterFn } from "@tanstack/react-table";
 import {
@@ -635,29 +630,13 @@ export function DataTableProduct({
                         </div>
                     )}
                 </div>
-                {role !== "marketing" && (
-                    <div className="w-full flex justify-end mr-2">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant="outline">Tambah</Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="flex flex-col p-0 w-48">
-                                <Link href={route("production.add.show")}>
-                                    <Button className="bg-transparent rounded-none p-0 text-gray-700 hover:bg-gray-100 rounded-t-sm flex justify-start pl-4 w-full">
-                                        Tambah Produk
-                                    </Button>
-                                </Link>
-                                <Link
-                                    href={route("production.add.category.show")}
-                                >
-                                    <Button className="bg-transparent rounded-none p-0 text-gray-700 hover:bg-gray-100 rounded-b-sm flex justify-start pl-4 w-full">
-                                        Tambah Kategori Produksi
-                                    </Button>
-                                </Link>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                )}
+                <div className="w-full flex justify-end pr-2">
+                    <Link href={route("production.add.show")}>
+                        <Button className="bg-white text-gray-700 border hover:bg-gray-100">
+                            Tambah Produk
+                        </Button>
+                    </Link>
+                </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="ml-auto">

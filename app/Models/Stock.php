@@ -12,18 +12,23 @@ class Stock extends Model
     protected $table = 'stock';
 
     protected $fillable = [
-        'quantity',
-        'price',
         'master_id',
+        'quantity',
+        'price'
     ];
 
     public function masterData()
     {
-        return $this->belongsTo(MasterData::class);
+        return $this->belongsTo(MasterData::class, 'master_id', 'id');
     }
 
     public function selectedStockCategories()
     {
         return $this->hasMany(SelectedStockCategory::class);
+    }
+
+    public function sales()
+    {
+        return $this->hasMany(Sales::class, 'sales_id');
     }
 }

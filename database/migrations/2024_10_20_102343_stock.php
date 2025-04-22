@@ -15,11 +15,11 @@ return new class extends Migration
     {
         Schema::create($this->tableName, function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('master_id');
             $table->integer('quantity');
             $table->bigInteger('price');
-            $table->unsignedBigInteger('master_id');
-            $table->foreign('master_id')->references('id')->on('master_data')->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
+            $table->foreign('master_id')->references('id')->on('master_data')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

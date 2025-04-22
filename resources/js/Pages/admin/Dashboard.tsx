@@ -3,15 +3,13 @@ import { PageProps } from "@/types";
 import AdminLayout from "@/Layouts/AdminLayout";
 import { Card, CardHeader, CardTitle } from "@/Components/ui/Card";
 import { DataTableLogging } from "../../Components/datatable/DataTableLogging";
-import { Box, Package, UsersRound, Truck, NotebookText, UserPen, UserCheck, Check, Notebook, NotebookPen, List, ListCheck, ListCollapse, IdCard, BookKey } from "lucide-react";
-import { Item, ItemIndicator } from "@radix-ui/react-dropdown-menu";
-// import { saveData, getData } from "@/lib/indexedDb";
+import { UsersRound, Truck, NotebookPen, ListCollapse, BookKey } from "lucide-react";
 
 interface Total {
     users: number;
-    keseluruhan: number;
-    categoryProduction: number;
-    categoryStock: number;
+    category: number;
+    tagsProduction: number;
+    tagsStock: number;
     master_data: number;
     production: number;
     stock: number;
@@ -20,10 +18,6 @@ interface Total {
     delivery_hold: number;
     delivery_delivery: number;
     delivery_delivered: number;
-    product_progress: number;
-    product_hold: number;
-    product_delivery: number;
-    product_delivered: number;
 }
 
 interface LogsType {
@@ -53,28 +47,6 @@ export default function Dashboard({
 }>) {
     const [data, setdata] = useState<any>([]);
 
-    // useEffect(() => {
-    //     const saveToIndexedDB = async () => {
-    //         const dataLogging = loggingData.map((item: any, index: number) => ({
-    //             ...item,
-    //             logging_id: index + 1,
-    //         }));
-    //         await saveData("logging", dataLogging);
-    //         setData(dataLogging);
-    //     };
-
-    //     const fetchFromIndexedDB = async () => {
-    //         const storedData = await getData("logging");
-    //         if (storedData.length > 0) {
-    //             setData(storedData);
-    //         } else {
-    //             saveToIndexedDB();
-    //         }
-    //     };
-
-    //     fetchFromIndexedDB();
-    // }, [loggingData]);
-
     return (
         <AdminLayout
             appName={appName}
@@ -85,7 +57,7 @@ export default function Dashboard({
             breadcumb2={appTitle}
         >
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            <Card className="shadow-none">
+                <Card className="shadow-none">
                     <CardHeader>
                         <CardTitle className="font-normal text-sm grid grid-cols-3">
                             <div className="bg-yellow-600 p-4 rounded-full max-w-fit max-h-fit">
@@ -94,11 +66,11 @@ export default function Dashboard({
                             <div className="col-span-2 pl-2">
                                 <h1 className="text-4xl font-bold text-right">
                                     {new Intl.NumberFormat("id-ID").format(
-                                        total.master_data
+                                        total.category
                                     )}
                                 </h1>
                                 <p className="text-sm text-right">
-                                    Total Produk / SKU Yang Terdaftar
+                                    Total Kategori yang Terdaftar
                                 </p>
                             </div>
                         </CardTitle>
@@ -113,11 +85,11 @@ export default function Dashboard({
                             <div className="col-span-2 pl-2">
                                 <h1 className="text-4xl font-bold text-right">
                                     {new Intl.NumberFormat("id-ID").format(
-                                        total.categoryProduction
+                                        total.tagsProduction
                                     )}
                                 </h1>
                                 <p className="text-sm text-right">
-                                    Total Kategori Pada Produksi
+                                    Total Tags Produksi
                                 </p>
                             </div>
                         </CardTitle>
@@ -132,11 +104,11 @@ export default function Dashboard({
                             <div className="col-span-2 pl-2">
                                 <h1 className="text-4xl font-bold text-right">
                                     {new Intl.NumberFormat("id-ID").format(
-                                        total.categoryStock
+                                        total.tagsStock
                                     )}
                                 </h1>
                                 <p className="text-sm text-right">
-                                    Total Kategori Pada Stok
+                                    Total Tags Pada Stok
                                 </p>
                             </div>
                         </CardTitle>
@@ -165,16 +137,16 @@ export default function Dashboard({
                     <CardHeader>
                         <CardTitle className="font-normal text-sm grid grid-cols-3">
                             <div className="bg-yellow-600 p-4 rounded-full max-w-fit max-h-fit">
-                                <NotebookPen className="text-white" />
+                                <BookKey className="text-white" />
                             </div>
                             <div className="col-span-2 pl-2">
                                 <h1 className="text-4xl font-bold text-right">
                                     {new Intl.NumberFormat("id-ID").format(
-                                        total.keseluruhan
+                                        total.master_data
                                     )}
                                 </h1>
                                 <p className="text-sm text-right">
-                                    Total Data Produk Keseluruhan
+                                    Total Produk / SKU Yang Terdaftar
                                 </p>
                             </div>
                         </CardTitle>
@@ -308,82 +280,6 @@ export default function Dashboard({
                                 </h1>
                                 <p className="text-sm text-right">
                                     Total Pengiriman On Hold
-                                </p>
-                            </div>
-                        </CardTitle>
-                    </CardHeader>
-                </Card>
-                <Card className="shadow-none">
-                    <CardHeader>
-                        <CardTitle className="font-normal text-sm grid grid-cols-3">
-                            <div className="bg-yellow-600 p-4 rounded-full max-w-fit max-h-fit">
-                                <Package className="text-white" />
-                            </div>
-                            <div className="col-span-2 pl-2">
-                                <h1 className="text-4xl font-bold text-right">
-                                    {new Intl.NumberFormat("id-ID").format(
-                                        total.product_progress
-                                    )}
-                                </h1>
-                                <p className="text-sm text-right">
-                                    Total Produk On Progress
-                                </p>
-                            </div>
-                        </CardTitle>
-                    </CardHeader>
-                </Card>
-                <Card className="shadow-none">
-                    <CardHeader>
-                        <CardTitle className="font-normal text-sm grid grid-cols-3">
-                            <div className="bg-blue-600 p-4 rounded-full max-w-fit max-h-fit">
-                                <Package className="text-white" />
-                            </div>
-                            <div className="col-span-2 pl-2">
-                                <h1 className="text-4xl font-bold text-right">
-                                    {new Intl.NumberFormat("id-ID").format(
-                                        total.product_delivery
-                                    )}
-                                </h1>
-                                <p className="text-sm text-right">
-                                    Total Produk On Delivery
-                                </p>
-                            </div>
-                        </CardTitle>
-                    </CardHeader>
-                </Card>
-                <Card className="shadow-none">
-                    <CardHeader>
-                        <CardTitle className="font-normal text-sm grid grid-cols-3">
-                            <div className="bg-green-600 p-4 rounded-full max-w-fit max-h-fit">
-                                <Package className="text-white" />
-                            </div>
-                            <div className="col-span-2 pl-2">
-                                <h1 className="text-4xl font-bold text-right">
-                                    {new Intl.NumberFormat("id-ID").format(
-                                        total.product_delivered
-                                    )}
-                                </h1>
-                                <p className="text-sm text-right">
-                                    Total Pengiriman Delivered
-                                </p>
-                            </div>
-                        </CardTitle>
-                    </CardHeader>
-                </Card>
-                <Card className="shadow-none">
-                    <CardHeader>
-                        <CardTitle className="font-normal text-sm grid grid-cols-3">
-                            <div className="bg-red-600 p-4 rounded-full max-w-fit max-h-fit">
-                                <Package className="text-white" />
-                            </div>
-                            <div className="col-span-2 pl-2">
-                                <h1 className="text-4xl font-bold text-right">
-                                    {new Intl.NumberFormat("id-ID").format(
-                                        total.product_hold
-                                    )}
-                                </h1>
-                                <p className="text-sm text-right">
-                                    Total Produk On Hold
                                 </p>
                             </div>
                         </CardTitle>

@@ -12,12 +12,17 @@ class Production extends Model
     protected $table = 'production';
 
     protected $fillable = [
-        'quantity',
         'master_id',
+        'quantity'
     ];
 
     public function masterData()
     {
-        return $this->belongsTo(MasterData::class);
+        return $this->belongsTo(MasterData::class, 'master_id');
+    }
+
+    public function selectedProductionCategories()
+    {
+        return $this->hasMany(SelectedProductionCategory::class);
     }
 }

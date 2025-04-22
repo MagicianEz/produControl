@@ -33,11 +33,6 @@ import {
     TableRow,
 } from "@/Components/ui/Table";
 import { Badge } from "@/Components/ui/Badge";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/Components/ui/Popover";
 import { Link } from "@inertiajs/react";
 import { FilterFn } from "@tanstack/react-table";
 import {
@@ -401,16 +396,6 @@ export const columns: ColumnDef<Product>[] = [
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                         <Link
-                            href={route("stock.move.show", {
-                                id: Number(product.stock_id),
-                            })}
-                            className="bg-red-500"
-                        >
-                            <DropdownMenuItem className="cursor-pointer">
-                                Move to Delivery
-                            </DropdownMenuItem>
-                        </Link>
-                        <Link
                             href={route("stock.detail.show", {
                                 id: Number(product.stock_id),
                             })}
@@ -753,22 +738,6 @@ export function DataTableStock({
                         </div>
                     )}
                 </div>
-                {role !== "marketing" && (
-                    <div className="w-full flex justify-end mr-2">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant="outline">Tambah</Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="flex flex-col p-0 w-48">
-                                <Link href={route("stock.add.category.show")}>
-                                    <Button className="bg-transparent rounded-none p-0 text-gray-700 hover:bg-gray-100 rounded-b-sm flex justify-start pl-4 w-full">
-                                        Tambah Kategori Stok
-                                    </Button>
-                                </Link>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                )}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="ml-auto">

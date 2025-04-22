@@ -28,8 +28,6 @@ export default function CategoryDeleteDashboard({
 
     const [isChecked, setIsChecked] = useState<boolean>(false);
     const [isChecked2, setIsChecked2] = useState<boolean>(false);
-    const [checkedError, setCheckedError] = useState<string>("");
-    const [checkedError2, setCheckedError2] = useState<string>("");
     const {
         reset,
         processing,
@@ -40,20 +38,8 @@ export default function CategoryDeleteDashboard({
 
     const submit = (e: any) => {
         e.preventDefault();
-        if (!isChecked) {
-            return setCheckedError("Anda harus menyetujui terlebih dahulu");
-        } else {
-            setCheckedError("");
-        }
-        if (!isChecked2) {
-            return setCheckedError(
-                "Anda harus menyetujui bahwa anda benar-benar dalam keadaan sadar sepenuhnya menghapus kategori tersebut!"
-            );
-        } else {
-            setCheckedError("");
-        }
         destroy(route("category.destroy"), {
-            onSuccess: () => reset("id"),
+            onSuccess: () => reset(),
         });
     };
 
@@ -86,11 +72,29 @@ export default function CategoryDeleteDashboard({
                         />
                     </div>
 
-                    {category.tags.length > 0 && (
+                    {category.production_tags.length > 0 && (
                         <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
-                            <Label htmlFor="tags">List Tag</Label>
+                            <Label htmlFor="tags">List Tag Produksi</Label>
                             <ul className="list-disc pl-5">
-                                {category.tags.map(
+                                {category.production_tags.map(
+                                    (
+                                        tag: { id: number; name: string },
+                                        index: number
+                                    ) => (
+                                        <li key={index} className="text-sm">
+                                            {tag.name}
+                                        </li>
+                                    )
+                                )}
+                            </ul>
+                        </div>
+                    )}
+
+                    {category.stock_tags.length > 0 && (
+                        <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
+                            <Label htmlFor="tags">List Tag Stok</Label>
+                            <ul className="list-disc pl-5">
+                                {category.stock_tags.map(
                                     (
                                         tag: { id: number; name: string },
                                         index: number
@@ -118,16 +122,6 @@ export default function CategoryDeleteDashboard({
                         </div>
                     </div>
 
-                    {checkedError && (
-                        <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
-                            <div className="flex gap-2 items-center">
-                                <p className="text-sm text-red-600">
-                                    {checkedError}
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
                     <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
                         <div className="flex gap-2 items-center">
                             <Checkbox
@@ -143,16 +137,6 @@ export default function CategoryDeleteDashboard({
                             </Label>
                         </div>
                     </div>
-
-                    {checkedError2 && (
-                        <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
-                            <div className="flex gap-2 items-center">
-                                <p className="text-sm text-red-600">
-                                    {checkedError2}
-                                </p>
-                            </div>
-                        </div>
-                    )}
 
                     <div className="grid w-full max-w-sm lg:max-w-lg items-center gap-2">
                         <div className="flex gap-2 items-center">

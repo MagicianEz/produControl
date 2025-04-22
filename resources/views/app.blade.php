@@ -16,9 +16,9 @@
 
     <!-- Scripts -->
     @routes
-    {{-- @viteReactRefresh
-    @vite(['resources/js/app.tsx', "resources/js/Pages/{$page['component']}.tsx"]) --}}
-    @vite(['resources/js/app.tsx'])
+    @viteReactRefresh
+    @vite(['resources/js/app.tsx', "resources/js/Pages/{$page['component']}.tsx"])
+    {{-- @vite(['resources/js/app.tsx']) --}}
     @inertiaHead
     @laravelPWA
 
@@ -30,7 +30,7 @@
     <!-- Tombol Install -->
     <button id="install-button" style="display: none;">Install</button>
 
-    <script>
+    {{-- <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
                 navigator.serviceWorker.register("/service-worker.js")
@@ -42,7 +42,7 @@
                     });
             });
         }
-    </script>
+    </script> --}}
 </body>
 
 </html>

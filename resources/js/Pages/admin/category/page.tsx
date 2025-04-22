@@ -3,7 +3,6 @@ import { PageProps } from "@/types";
 import { Head, usePage } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { DataTableCategory } from "@/Components/datatable/DataTableCategory";
-// import { saveData, getData } from "@/lib/indexedDb";
 
 interface FlashType extends PageProps {
     flash: {
@@ -15,8 +14,11 @@ interface FlashType extends PageProps {
 interface Category {
     category_id: number;
     category_name: string;
-    category_type: string;
-    tags: {
+    production_tags: {
+        id: number;
+        name: string;
+    }[];
+    stock_tags: {
         id: number;
         name: string;
     }[];
@@ -39,19 +41,27 @@ export default function DeliveryDashboard({
         new Set<string>(categories.map((item) => item.category_name))
     ).map((item: string) => ({ value: item, label: item }));
 
-    const allTag: { value: string; label: string }[] = Array.from(
+    const allTagProduction: { value: string; label: string }[] = Array.from(
         new Set<string>(
             categories
-                .map((item) =>
-                    item.tags.map(
-                        (tag: { id: number; name: string }) => tag.name
-                    )
+                .flatMap((item) =>
+                    item.production_tags.map((tag) => tag.name)
                 )
-                .flat()
         )
     ).map((item: string) => ({ value: item, label: item }));
+    
+    const allTagStock: { value: string; label: string }[] = Array.from(
+        new Set<string>(
+            categories
+                .flatMap((item) =>
+                    item.stock_tags.map((tag) => tag.name)
+                )
+        )
+    ).map((item: string) => ({ value: item, label: item }));
+    
 
     const [data, setData] = useState<any>([]);
+
     const [flashMessage, setFlashMessage] = useState<FlashType["flash"]>({
         success: null,
         error: null,
@@ -67,44 +77,17 @@ export default function DeliveryDashboard({
     }, [flash]);
 
     useEffect(() => {
-        const dataCategory = categories.map(
-            (category: Category, index: number) => ({
-                ...category,
-                no: index + 1,
-                id_kategori: category.category_id,
-                nama_kategori: category.category_name,
-                tipe_kategori: category.category_type,
-            })
-        );
+        const dataCategory = categories.map((category: Category, index: number) => ({
+            ...category,
+            no: index + 1,
+            id_kategori: category.category_id,
+            nama_kategori: category.category_name,
+            tags_produksi: category.production_tags,
+            tags_stok: category.stock_tags,
+        }));
         setData(dataCategory);
     }, []);
 
-    // useEffect(() => {
-    //     const saveToIndexedDB = async () => {
-    //         const dataCategory = categories.map(
-    //             (category: Category, index: number) => ({
-    //                 ...category,
-    //                 no: index + 1,
-    //                 id_kategori: category.category_id,
-    //                 nama_kategori: category.category_name,
-    //                 tipe_kategori: category.category_type,
-    //             })
-    //         );
-    //         await saveData("categories", dataCategory);
-    //         setData(dataCategory);
-    //     };
-
-    //     const fetchFromIndexedDB = async () => {
-    //         const storedData = await getData("categories");
-    //         if (storedData.length > 0) {
-    //             setData(storedData);
-    //         } else {
-    //             saveToIndexedDB();
-    //         }
-    //     };
-
-    //     fetchFromIndexedDB();
-    // }, [categories]);
 
     return (
         <AdminLayout
@@ -132,7 +115,8 @@ export default function DeliveryDashboard({
                     data={data}
                     role={roleUser}
                     allCategory={allCategory}
-                    allTag={allTag}
+                    allTagProduction={allTagProduction}
+                    allTagStock={allTagStock}
                 />
             </div>
         </AdminLayout>
